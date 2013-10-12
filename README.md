@@ -12,6 +12,24 @@ Full Documentation
 
 The full documentation with examples and explanation is available here: http://www.robindavid.comli.com/pystack
 
+Package
+=======
+
+All the sources and examples are provided on Github. If you want only the module without documentation and example the module is available on Pypi : https://pypi.python.org/pypi/pystack
+
+Installation
+============
+
+From pip:
+
+    pip install pystack
+
+From Github:
+
+    git clone https://github.com/RobinDavid/pystack.git
+    cd pystack
+    python setup.py install 
+
 Dependencies
 ------------
 
