@@ -44,6 +44,7 @@ class PyStack(object):
     instance = None  #Attributes for the singleton pattern
     instanciated = False
     running = False
+    _session = TCPSession    
     
     def __new__(cls, *args, **kwargs):
         """ Override the new method to all the time return the same instance"""
@@ -100,7 +101,7 @@ class PyStack(object):
         """
         
         #Layer 5
-        tcpsession = TCPSession(self.interface)
+        tcpsession = self._session(self.interface)
         tcpsession.register_lower_layer("default", self.tcp)
         #self.tcp.register_layer(tcpsession)
         
@@ -158,6 +159,10 @@ class PyStack(object):
     def is_udp_port_free(self, p):
         """Return either or not the port sent in parameter is free"""
         return self.udp.is_port_free(p)
+
+    def set_custom_session(self, sess):
+        """ Method that allow to change the kind of session created when registering tcp application """
+        self._session = sess
 
 
 if __name__ == "__main__":
