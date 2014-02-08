@@ -20,7 +20,7 @@ AF_INET = 2
 SOCK_STREAM = 1
 
 class socket(TCPApplication):
-''' Really basic implementation of socket based on Pystack '''    
+    ''' Really basic implementation of socket based on Pystack '''    
     def __init__(self, *args):
         TCPApplication.__init__(self)
         self.stack = PyStack()

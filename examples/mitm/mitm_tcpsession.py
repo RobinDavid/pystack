@@ -19,13 +19,13 @@ from pystack.layers.tcp_application import TCPApplication
 import nfqueue
 
 class SessionMITM(TCPSession):
- '''
-     The topology is the following:
-     Kernel(or A)  <---> Eve  <---->    Server
-     seqNoa              seqNo
-     ackNoa              ackNo
-     nextAcka            nextAck
- '''
+    '''
+    The topology is the following:
+    Kernel(or A)  <---> Eve  <---->    Server
+    seqNoa              seqNo
+    ackNoa              ackNo
+    nextAcka            nextAck
+    '''
 
     pending = {} #Buffer of packet 
     seqNo = 0    #Eve sequence number
@@ -47,7 +47,7 @@ class SessionMITM(TCPSession):
         self.win = win  #Qt window
         
     def outgoing_nfqueue_packet(self, dummy, packet):
-    ''' Handler for outgoing packets coming from the nfqueue '''
+        ''' Handler for outgoing packets coming from the nfqueue '''
      
         data = packet.get_data() #Recover raw data
         ippacket = IP(data)      #Convert bytes to a Scapy IP packet
@@ -104,7 +104,7 @@ class SessionMITM(TCPSession):
         
         
     def incoming_nfqueue_packet(self,dummy, packet):
-    ''' Handler for incoming packets coming from the nfqueue '''
+        ''' Handler for incoming packets coming from the nfqueue '''
         data = packet.get_data()
         ippacket = IP(data)
         
@@ -132,7 +132,7 @@ class SessionMITM(TCPSession):
 
 
     def send_packet(self, packet, flags=ACK, **kwargs):
-    ''' Call when a packet is about to be sent either by kernel or Eve '''
+        ''' Call when a packet is about to be sent either by kernel or Eve '''
     
         if self.initialisation:
             print("Cannot send packet while hadn't hooked a first packet")

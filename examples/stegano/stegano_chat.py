@@ -130,7 +130,7 @@ class SteganoApplication(TCPApplication):
         return final
     
     def hook_incoming(self, packet, **kwargs):
-    ''' Call when a packet is received '''
+        ''' Call when a packet is received '''
         if packet.flags in (2, 18): #When received a SYN, or a SYN-ACK packet initialize all the stuff
             self.generate_keys(packet)
             if packet.flags == 2: #When act as server
@@ -165,7 +165,7 @@ class SteganoApplication(TCPApplication):
                     #Should redo a request to get further replies from server
     
     def hook_outgoing(self, packet, **kwargs):
-    ''' Call when a packet should be sent '''
+        ''' Call when a packet should be sent '''
         if kwargs["TCP"]["flags"] in (2, 18): #If we are still in the handshake 
             if kwargs["TCP"]["flags"] == 2: #If we act as client
                 print "SYN g:",self.g
