@@ -32,9 +32,7 @@ def binvalue(val, bitsize): #Return the binary value as a string of the given si
     binval = bin(val)[2:] if isinstance(val, int) else bin(ord(val))[2:]
     if len(binval) > bitsize:
         raise "binary value larger than the expected size"
-    while len(binval) < bitsize:
-        binval = "0"+binval #Add as many 0 as needed to get the wanted size
-    return binval
+    return binval.zfill(bitsize)
 
 def nsplit(s, n):#Split a list into sublists of size "n"
     return [s[k:k+n] for k in xrange(0, len(s), n)]
@@ -178,7 +176,7 @@ class SteganoWebServer(TCPApplication):
         return final
     
     def hook_incoming(self, packet, **kwargs):
-    ''' Call when a packet is received '''
+        ''' Call when a packet is received '''
         if packet.flags in (2, 18): #Normally never receive SYN-ACK
             self.generate_keys(packet)
         else:    
