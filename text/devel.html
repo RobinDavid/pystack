@@ -1,0 +1,192 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyStack development &mdash; PyStack 1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../_static/cloud.js"></script>
+    <link rel="top" title="PyStack 1 documentation" href="../index.html" />
+    <link rel="next" title="IP Stack compliance" href="compliance.html" />
+    <link rel="prev" title="Examples" href="example.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="compliance.html" title="IP Stack compliance"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="example.html" title="Examples"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">PyStack 1 documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pystack-development">
+<h1>PyStack development<a class="headerlink" href="#pystack-development" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="about-the-project">
+<h2>About the project<a class="headerlink" href="#about-the-project" title="Permalink to this headline">¶</a></h2>
+<p>PyStack use Github as repository and is available at <a class="reference external" href="https://github.com/RobinDavid/pystack">https://github.com/RobinDavid/pystack</a> .</p>
+<p>Because I am the only developer of the project I use Github to host it. Feel free to fork it
+and to contribute enhancing the stack functionalities or by adding new protocols. I will be happy
+to merge them into the main repo.</p>
+</div>
+<div class="section" id="how-to-contribute">
+<h2>How to Contribute<a class="headerlink" href="#how-to-contribute" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Fork the project and add new functionalities</li>
+<li>Add explanation or examples to this documentation</li>
+<li>Found a bug, report it on <a class="reference external" href="https://github.com/RobinDavid/pystack/issues">issues</a></li>
+</ul>
+</div>
+<div class="section" id="todo-list">
+<h2>TODO list<a class="headerlink" href="#todo-list" title="Permalink to this headline">¶</a></h2>
+<p>Here is the list of all the enhancement that are planned to be added to the project:</p>
+<ul class="simple">
+<li>Writing support for IPv6 protocol</li>
+<li>In PyStack when listening, listening on all available interface (lo) included and ensure the routing between the different interfaces. <em>This represent a lot of work</em></li>
+<li>Writing a filter for ARP which packets are not blocked</li>
+<li>Writing a kernel module to decide either to keep a packet or not (better than using iptables but less portables)</li>
+<li>Manage manual fragmentation (now use fragment function of scapy)</li>
+</ul>
+<p>Technical todo:</p>
+<ul class="simple">
+<li>Send ICMP time exceeded on reassembly timeout</li>
+<li>In send_packet of TCPSession put ack value to 0 if ack flag not set</li>
+<li>Create a timer hypervisor, which can call a callback method when a timer exceeded.</li>
+<li>Add a timestamp to each ARP entries in the cache to make them expire after 20 minutes</li>
+<li>Manage simultaneous passive and active close deadlock.</li>
+</ul>
+</div>
+<div class="section" id="extending-pystack-adding-layers-protocols">
+<h2>Extending Pystack adding layers/protocols<a class="headerlink" href="#extending-pystack-adding-layers-protocols" title="Permalink to this headline">¶</a></h2>
+<p>If you create a new layer/protocol feel free to contact me, and I will manage to merge it with the current to make
+it available for all.</p>
+<p>To achieve such the best is to fork the project on Github apply our changes and then I merge the modification in the main branch or in a devel branch.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../index.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="framework.html">Framework Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">PyStack development</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#about-the-project">About the project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-contribute">How to Contribute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#todo-list">TODO list</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#extending-pystack-adding-layers-protocols">Extending Pystack adding layers/protocols</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="compliance.html">IP Stack compliance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshoot.html">Troubleshooting</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="example.html"
+                        title="previous chapter">Examples</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="compliance.html"
+                        title="next chapter">IP Stack compliance</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/text/devel.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="compliance.html" title="IP Stack compliance"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="example.html" title="Examples"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">PyStack 1 documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2013, Robin David.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

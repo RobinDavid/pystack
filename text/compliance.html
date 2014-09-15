@@ -1,0 +1,1576 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>IP Stack compliance &mdash; PyStack 1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../_static/cloud.js"></script>
+    <link rel="top" title="PyStack 1 documentation" href="../index.html" />
+    <link rel="next" title="Troubleshooting" href="troubleshoot.html" />
+    <link rel="prev" title="PyStack development" href="devel.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="troubleshoot.html" title="Troubleshooting"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="devel.html" title="PyStack development"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">PyStack 1 documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ip-stack-compliance">
+<h1>IP Stack compliance<a class="headerlink" href="#ip-stack-compliance" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="rfc1122-compliance">
+<h2>RFC1122 Compliance<a class="headerlink" href="#rfc1122-compliance" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This page intent to provide a brief overview of the functionalities provided regarding the RFC1122
+about IP stack requirements. The informations provided are not 100% accurate.</p>
+</div>
+<p class="centered">
+<strong>Requirements for Internet Hosts</strong></p><p class="centered">
+<strong>Communication Layers</strong></p><div class="section" id="link-layer-requirements">
+<h3>Link Layer requirements<a class="headerlink" href="#link-layer-requirements" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="63%" />
+<col width="24%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>May</td>
+<td>Trailer encapsulation</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>Not send trailer by default</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>be able to send and receive RFC 894 Ethernet</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Should</td>
+<td>receive RFC 1042 (IEEE 802) encapsulation</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>May</td>
+<td>Send RFC 1042 encapsulation</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>report link-layer broadcasts to the IP layer</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>pass the IP TOS value to the link layer</td>
+<td>Yes (p.1175)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="ip-requirements">
+<h3>IP Requirements<a class="headerlink" href="#ip-requirements" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="9%" />
+<col width="64%" />
+<col width="27%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Must</td>
+<td>implement IP and ICMP</td>
+<td>No (no ICMP yet)</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>handle remote multihoming in application layer</td>
+<td>No (I don&#8217;t think so)</td>
+</tr>
+<tr class="row-odd"><td>May</td>
+<td>support local multihoming</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>meet router specifications if forwarding datagrams</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>provide configuration switch for embedded router functionality</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>not enable routing based on number of interfaces</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td>Should</td>
+<td>log discarded datagrams, including the contents of the datagram</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>silently discard datagrams that arrive with an IP version other than 4</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>verify IP checksum and silently discard an invalid datagram</td>
+<td>No (not discarded)</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>support subnet addressing (RFC 950)</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>transmit packets with host’s own IP address as the source address</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>silently discard datagrams not destined for the host</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>silently discard datagrams with bad source address</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>support reassembly</td>
+<td>Yes (Hellyeah !)</td>
+</tr>
+<tr class="row-odd"><td>May</td>
+<td>retain same ID field in identical datagrams</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>allow the transport layer to set TOS</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>pass received TOS up to transport layer</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Should</td>
+<td>not use RFC 795 [Postel 1981d] link-layer mappings for TOS</td>
+<td>Yes (no mapping is made :p)</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>not send packet with TTL of 0</td>
+<td>No (no verification made)</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>not discard received packets with a TTL less than 2</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>allow transport layer to set TTL</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>enable configuration of a fixed TTL</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="multihoming">
+<h4>Multihoming<a class="headerlink" href="#multihoming" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="9%" />
+<col width="64%" />
+<col width="27%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Should</td>
+<td>select, as the source address for a reply, the specific address
+received as the destination address of the request</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>allow application to choose local IP address</td>
+<td>No (only listen 1 interface)</td>
+</tr>
+<tr class="row-odd"><td>May</td>
+<td>silently discard datagrams addressed to an interface other
+than the one on which it is received</td>
+<td><dl class="first last docutils">
+<dt>Yes (cause it listen on</dt>
+<dd>one interface)</dd>
+</dl>
+</td>
+</tr>
+<tr class="row-even"><td>May</td>
+<td>require packets to exit the system through the interface...</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="broadcast">
+<h4>Broadcast<a class="headerlink" href="#broadcast" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="9%" />
+<col width="61%" />
+<col width="31%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Must</td>
+<td>not select an IP broadcast address as a source address</td>
+<td>Yes (no broadcast)</td>
+</tr>
+<tr class="row-even"><td>Should</td>
+<td>accept an all-0s or all-1s broadcast address</td>
+<td>Yes (does not make the difference)</td>
+</tr>
+<tr class="row-odd"><td>May</td>
+<td>support configurable option to send all 0s or all 1s as the broadcast</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>recognize all broadcast address formats</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>use an IP broadcast or IP multicast destination address in a
+link-layer broadcast</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Should</td>
+<td>silently discard link-layer broadcasts when the packet does not
+specify an IP broadcast address as its destination</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Should</td>
+<td>use limited broadcast address for connected networks</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="ip-interface">
+<h4>IP Interface<a class="headerlink" href="#ip-interface" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="7%" />
+<col width="46%" />
+<col width="47%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Must</td>
+<td>allow transport layer to use all IP mechanisms</td>
+<td>Yes (giving transport layer access to all ip headers)</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>pass interface identification up to transport layer</td>
+<td>No (but quite important)</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>pass all IP options to transport layer</td>
+<td>No (but easily doable)</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>allow transport layer to send ICMP port unreachable
+and any of the ICMP query messages</td>
+<td><dl class="first last docutils">
+<dt>No (but easily doable with transversal_layer_access</dt>
+<dd>if icmp implemented)</dd>
+</dl>
+</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>pass the following ICMP messages to the transport
+layer:destination unreachable, source quench, echo
+reply, timestamp, reply, and time exceeded</td>
+<td>No (but like previous point)</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>include contents of ICMP message in ICMP message
+passed to the transport layer</td>
+<td>No (idem)</td>
+</tr>
+<tr class="row-odd"><td>Should</td>
+<td>be able to leap tall buildings at a single bound</td>
+<td>No (what&#8217;s that ?)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="ip-options-requirements">
+<h4>IP Options Requirements<a class="headerlink" href="#ip-options-requirements" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="7%" />
+<col width="70%" />
+<col width="23%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Must</td>
+<td>allow transport layer to send IP options</td>
+<td>No (but why not)</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>pass all IP options received to higher layer</td>
+<td>No (but why not)</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>silently ignore unknown options</td>
+<td>Yes (ignore them all :p)</td>
+</tr>
+<tr class="row-even"><td>May</td>
+<td>support the security option</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Should</td>
+<td>not send the stream identifier option and must ignore it in received datagrams</td>
+<td>Yes (??)</td>
+</tr>
+<tr class="row-even"><td>May</td>
+<td>support the record route option</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>May</td>
+<td>support the timestamp option</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>support originating a source route and must be able to act as the final
+destination of a source route</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>pass a datagram with completed source route up to the transport layer</td>
+<td>Yes (Why won&#8217;t it)</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>build correct (nonredundant) return route</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>not send multiple source route options in one header</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="source-route-forwarding">
+<h4>Source route forwarding<a class="headerlink" href="#source-route-forwarding" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="10%" />
+<col width="85%" />
+<col width="5%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>May</td>
+<td>support packet forwarding with the source route option</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>obey corresponding router rules while processing source routes</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>update TTL according to gateway rules</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>generate ICMP error codes 4 and 5</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>allow the IP source address of a source routed packet to not be
+an IP address of the forwarding host</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>update timestamp and record route options</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>support a configurable switch for nonlocal source routing</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>satisfy gateway access rules for nonlocal source routing</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Should</td>
+<td>send an ICMP destination unreachable error (when forwarding fail)</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="ip-fragmentation-and-reassembly">
+<h4>IP Fragmentation and Reassembly<a class="headerlink" href="#ip-fragmentation-and-reassembly" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="75%" />
+<col width="19%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Must</td>
+<td>be able to reassemble incoming datagrams of at least 576 bytes</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Should</td>
+<td>support a configurable or indefinite maximum size for incoming datagrams</td>
+<td>Yes (infinite)</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>provide a mechanism for the transport layer to learn the maximum datagram size to receive.</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>send ICMP time exceeded error on reassembly timeout</td>
+<td>No (but doable)</td>
+</tr>
+<tr class="row-odd"><td>Should</td>
+<td>support a fixed reassembly timeout value</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>provide the MMS_S to higher layers</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>May</td>
+<td>support local fragmentation of outgoing packets</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>not allow transport layer to send a message larger than MMS_S</td>
+<td>No (but fragment it in
+ip layer in this case)</td>
+</tr>
+<tr class="row-odd"><td>Should</td>
+<td>not send messages larger than 576 bytes to a remote destination in the absence of other
+information regarding the path MTU to the destination</td>
+<td>No (I don&#8217;t care :p)</td>
+</tr>
+<tr class="row-even"><td>May</td>
+<td>support an all-subnets-MTU configuration flag</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="icmp-requirements">
+<h3>ICMP Requirements<a class="headerlink" href="#icmp-requirements" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="8%" />
+<col width="88%" />
+<col width="4%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Must</td>
+<td>silently discard ICMP messages with unknown type</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>May</td>
+<td>include more than 8 bytes of the original datagram</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>return the header and data unchanged from the received datagram</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>demultiplex received ICMP error message to transport protocol</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Should</td>
+<td>send ICMP error messages with a TOS field of 0</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>not send an ICMP error message caused by a previous ICMP error message</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>not send an ICMP error message caused by an IP broadcast or IP multicast datagram</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>not send an ICMP error message caused by a link-layer broadcast</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>not send an ICMP error message caused by a noninitial fragment</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>not send an ICMP error message caused by a datagram with nonunique source address</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>return ICMP error messages when not prohibited</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Should</td>
+<td>generate ICMP destination unreachable</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>pass ICMP destination unreachable to higher layer</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Should</td>
+<td>respond to destination unreachable error</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>interpret destination unreachable as only a hint, as it may indicate a transient condition</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>not send an ICMP redirect when configured as a host.</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>update route cache when an ICMP redirect is received</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>handle both host and network redirects</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Should</td>
+<td>discard illegal redirects</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>May</td>
+<td>send source quench if memory is unavailable</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>pass source quench to higher layer</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Should</td>
+<td>respond to source quench in higher layer</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>pass time exceeded error to transport layer</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Should</td>
+<td>send parameter problem errors</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>pass parameter problem errors to transport layer</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>May</td>
+<td>report parameter problem errors to process</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>support an echo server and should support an echo client</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>May</td>
+<td>discard echo requests to a broadcast address</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>May</td>
+<td>discard echo request to multicast address</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>use specific destination address as echo reply source</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>return echo request data in echo reply</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>pass echo reply to higher layer</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>reflect record route and timestamp options in ICMP echo request message</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>reverse and reflect source route option</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Should</td>
+<td>not support the ICMP information request or reply</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>May</td>
+<td>implement the ICMP timestamp request and timestamp reply messages</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>minimize timestamp delay variability</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>May</td>
+<td>silently discard broadcast timestamp request</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>May</td>
+<td>silently discard multicast timestamp requests</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>use specific destination address as timestamp reply source address</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Should</td>
+<td>reflect record route and timestamp options in an ICMP timestamp request</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>reverse and reflect source route option in ICMP timestamp request</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>pass timestamp reply to higher layer</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>obey rules for standard timestamp value</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>provide a configurable method for selecting the address mask selection method for an inter</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>support static configuration of address mask</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>May</td>
+<td>get address mask dynamically during system initialization</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>May</td>
+<td>get address with an ICMP address mask request and reply messages</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>retransmit address mask request if no reply</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Should</td>
+<td>assume default mask if no reply is received</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>update address mask from first reply only</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Should</td>
+<td>perform reasonableness check on any installed address mask</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>not send unauthorized address mask reply message and must be explicitly configured as agent</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Should</td>
+<td>support an associated address mask authority flag with each address mask configuration</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>broadcast address mask reply when initialized</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="multicasting-requirements">
+<h3>Multicasting requirements<a class="headerlink" href="#multicasting-requirements" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="8%" />
+<col width="88%" />
+<col width="4%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Should</td>
+<td>support local IP multicasting (RFC 1112)</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Should</td>
+<td>join the all-hosts group at start-up</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Should</td>
+<td>provide a mechanism for higher layers to discover an interface’s IP multicast capability</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="igmp-requirements">
+<h3>IGMP Requirements<a class="headerlink" href="#igmp-requirements" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="68%" />
+<col width="11%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>May</td>
+<td>support IGMP (RFC 1112)</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="routing-requirements">
+<h3>Routing Requirements<a class="headerlink" href="#routing-requirements" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="5%" />
+<col width="71%" />
+<col width="24%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Must</td>
+<td>use address mask in determining whether a datagram’s destination is on a connected network</td>
+<td>Yes (but made by scapy)</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>operate correctly in a minimal environment when there are no routers</td>
+<td>Yes (it should I hope)</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>keep a “route cache” of mappings to next-hop routers</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Should</td>
+<td>treat a received network redirect the same as a host redirect</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>use a default router when no entry exists for the destination in the routing table</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>support multiple default routers</td>
+<td>No (i don&#8217;t think so)</td>
+</tr>
+<tr class="row-odd"><td>May</td>
+<td>implement a table of static routes</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>May</td>
+<td>include a flag with each static route specifying whether or not the route can be overridden by a redirect</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>May</td>
+<td>allow the routing table key to be a complete host address and not just a network address</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Should</td>
+<td>include the TOS in the routing table entry</td>
+<td>No (I do not hold the routing table
+directly)</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>be able to detect the failure of a next-hop router that appears as the gateway field in the routing table
+and be able to choose an alternate next-hop router</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Should</td>
+<td>not assume that a route is good forever</td>
+<td>Yes (for sure)</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>not ping routers continuously (ICMP echo request)</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>use pinging of a router only when traffic is being sent to that router</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Should</td>
+<td>allow higher and lower layers to give positive and negative advice</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>switch to another default router when the existing default fails</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td><dl class="first last docutils">
+<dt>allow the following information to be configured manually in the routing table: IP address, network</dt>
+<dd>mask, list of defaults</dd>
+</dl>
+</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="arp-requirements">
+<h3>ARP Requirements<a class="headerlink" href="#arp-requirements" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="7%" />
+<col width="72%" />
+<col width="21%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Must</td>
+<td>provide a mechanism to flush out-of-date ARP entries</td>
+<td>No (but easily doable)</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>include a mechanism to prevent ARP flooding</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Should</td>
+<td>save (rather than discard) at least one (the latest)
+packet of each set of packets destined to the same unresolved IP address</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="udp-requirements">
+<h3>UDP Requirements<a class="headerlink" href="#udp-requirements" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="77%" />
+<col width="17%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Should</td>
+<td>send ICMP port unreachable</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>pass received IP options to application</td>
+<td>No (just ipsrc, ipdst)</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>allow application to specify IP options to send</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>pass IP options down to IP layer</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>pass received ICMP messages to application</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>be able to generate and verify UDP checksum</td>
+<td>Yes (made by scapy)</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>silently discard datagrams with bad checksum</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>May</td>
+<td>allow sending application to specify whether outgoing checksum is calculated, but must default to on</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>May</td>
+<td>allow receiving application to specify whether received UDP datagrams without a checksum</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>pass destination IP address to application</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>allow application to specify local IP address to be used when sending a UDP datagram</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>allow application to specify wildcard local IP address</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Should</td>
+<td>allow application to learn of the local address that was chosen</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>silently discard a received UDP datagram with an invalid source IP address</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>send a valid IP source address</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>provide the full IP interface from Section 3.4 of RFC 1122</td>
+<td>??</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>allow application to specify TTL, TOS, and IP options for output datagrams</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>May</td>
+<td>pass received TOS to application</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="tcp-requirements">
+<h3>TCP Requirements<a class="headerlink" href="#tcp-requirements" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="psh">
+<h4>PSH<a class="headerlink" href="#psh" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="9%" />
+<col width="85%" />
+<col width="6%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>May</td>
+<td>aggregate data sent by the user without the PSH flag</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>May</td>
+<td>queue data received without the PSH flag</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Sender</td>
+<td>should collapse successive PSH flags when it packetizes data</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>May</td>
+<td>implement PSH flag on write calls</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td>Since</td>
+<td>PSH flag is not part of the write call, must not buffer data indefinitely</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>May</td>
+<td>pass received PSH flag to application</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td>Should</td>
+<td>send maximum-sized segment whenever possible, to improve performance</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="window">
+<h4>Window<a class="headerlink" href="#window" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="8%" />
+<col width="88%" />
+<col width="5%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td colspan="2">Must    | treat window size as an unsigned number.</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td colspan="2">Receiver| must not shrink the window</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td colspan="2">Sender  | must be robust against window shrinking</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td colspan="2">May     | keep offered receive window closed indefinitely</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td colspan="2">Sender  | must probe a zero window</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td colspan="2">Should  | send first zero-window probe when the window has been closed for the RTO</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td colspan="2">Should  | exponentially increase the interval between successive probes</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td colspan="2">Must    | allow peer’s window to stay closed indefinitely</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td colspan="2">Sender  | must not timeout a connection just because the other end keeps advertising a zero window</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="urgent-data">
+<h4>Urgent Data<a class="headerlink" href="#urgent-data" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="10%" />
+<col width="84%" />
+<col width="6%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Must</td>
+<td>have urgent pointer point to last byte of urgent data</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>support a sequence of urgent data of any length</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>inform the receiving process (1) when TCP receives an urgent
+pointer and there was no previously pending urgent data</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>be a way for the process to determine how much urgent data remains</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="tcp-options">
+<h4>TCP Options<a class="headerlink" href="#tcp-options" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="10%" />
+<col width="84%" />
+<col width="6%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Must</td>
+<td>be able to receive TCP options in any segment</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>ignore any options not supported</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>cope with an illegal option length</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>implement both sending and receiving the MSS option</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td>Should</td>
+<td>send an MSS option in every SYN when its receive MSS</td>
+<td>yes</td>
+</tr>
+<tr class="row-even"><td>Should</td>
+<td>If an MSS option is not received with a SYN, must assume a default
+MSS of 536</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>calculate the “effective send MSS.”</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="tcp-checksums">
+<h4>TCP Checksums<a class="headerlink" href="#tcp-checksums" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="8%" />
+<col width="86%" />
+<col width="5%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Must</td>
+<td>generate a TCP checksum in outgoing segments and must verify received checksums</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="isn">
+<h4>ISN<a class="headerlink" href="#isn" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="12%" />
+<col width="81%" />
+<col width="7%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Must</td>
+<td>use the specified clock-driven selection from RFC 793</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="opening-connections">
+<h4>Opening connections<a class="headerlink" href="#opening-connections" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="66%" />
+<col width="28%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Must</td>
+<td>support simultaneous open attempts</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>keep track of whether it reached the SYN_RCVD state from the LISTEN or SYN_SENT states</td>
+<td>No (but could be interesting to know)</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>A passive open must not affect previously created connections</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>allow a listening socket with a given local port at the same time that another socket
+with the same local port is in the SYN_SENT or SYN_RCVD state</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>ask IP to select a local IP address to be used as the source IP address when the source
+IP address is not specified by the process performing an active open on a multihomed host</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>continue to use the same source IP address for all segment sent on a connnection</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>not allow an active open for a broadcast or multicast foreign address</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>ignore incoming SYNs with an invalid source address</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="closing-connections">
+<h4>Closing Connections<a class="headerlink" href="#closing-connections" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="67%" />
+<col width="28%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Should</td>
+<td>allow an RST to contain data</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>inform process whether other end closed the connection normally (FIN normal, RST aborted)</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>May</td>
+<td>implement a half-close</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>If the process completely closes a connection TCP should send RST indicating data was lost</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>linger in TIME_WAIT state for twice the MSL</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>May</td>
+<td>accept a new SYN from a peer to reopen a connection directly from the TIME_WAIT state</td>
+<td>No (cause TIME_WAIT not implemented)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="retransmission">
+<h4>Retransmission<a class="headerlink" href="#retransmission" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="84%" />
+<col width="10%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Must</td>
+<td>implement Van Jacobson’s slow start and congestion avoidance</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>May</td>
+<td>reuse the same IP identifier field when a retransmission is identical to the original packet</td>
+<td>Yes may</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>implement Jacobson’s algorithm for calculating the RTO and Karn’s algorithm for selecting the RTT measurements</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>include an exponential backoff for successive RTO values</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>Retransmission of SYN segments should use the same algorithm as data segments</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Should</td>
+<td>initialize estimation parameters to calculate an initial RTO of 3 seconds</td>
+<td>Yes (static)</td>
+</tr>
+<tr class="row-odd"><td>Should</td>
+<td>have a lower bound on the RTO measured in fractions of a second and an upper bound of twice the MSL</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="generating-acks">
+<h4>Generating ACKs<a class="headerlink" href="#generating-acks" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="10%" />
+<col width="83%" />
+<col width="8%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Should</td>
+<td>queue out-of-order segments</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>process all queued segments before sending any ACKs</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>May</td>
+<td>generate an immediate ACK for an out-of-order segment</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Should</td>
+<td>implement delayed ACKs and the delay must be less than 0.5 second</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Should</td>
+<td>send an ACK for at least every second segment</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>include silly window syndrome avoidance in the receiver</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="sending-data">
+<h4>Sending Data<a class="headerlink" href="#sending-data" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="10%" />
+<col width="83%" />
+<col width="7%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Must</td>
+<td>The TTL value for TCP segments must be configurable</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>include sender silly window syndrome avoidance</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Should</td>
+<td>implement the Nagle algorithm</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>allow a process to disable the Nagle algorithm on a given connection</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="connection-failures">
+<h4>Connection Failures<a class="headerlink" href="#connection-failures" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="80%" />
+<col width="14%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Must</td>
+<td>pass negative advice to IP when the number of retransmissions for a given segment exceeds some value R1</td>
+<td>No (Figure 25.26)</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>close a connection when the number of retransmissions for a given segment exceeds some value R2</td>
+<td>No (Figure 25.26)</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>allow process to set the value of R2</td>
+<td>No (Figure 25.26)</td>
+</tr>
+<tr class="row-even"><td>Should</td>
+<td>inform the process when R1 is reached and before R2 is reached</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Should</td>
+<td>default R1 to at least 3 retransmissions and R2 to at least 100 seconds</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>handle SYN retransmissions in the same general way as data retransmissions</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>set R2 to at least 3 minutes for a SYN</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="keepalive-packets">
+<h4>Keepalive Packets<a class="headerlink" href="#keepalive-packets" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="8%" />
+<col width="89%" />
+<col width="4%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>May</td>
+<td>provide keepalives</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>allow process to turn keepalives on or off, and must default to off</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>send keepalives only when connection is idle for a given period</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>allow the keepalive interval to be configurable and must default to no less than 2 hours</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>not interpret the failure to respond to any given probe as a dead connection</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="ip-options">
+<h4>IP Options<a class="headerlink" href="#ip-options" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="8%" />
+<col width="70%" />
+<col width="22%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Must</td>
+<td>ignore received IP options it doesn’t understand</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>May</td>
+<td>support the timestamp and record route options in received segments</td>
+<td>No (but easily doable)</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>save a received source route in a connection that is passively
+opened and use the return route for all segments sent on this connection</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="receiving-icmp-messages-from-ip">
+<h4>Receiving ICMP Messages from IP<a class="headerlink" href="#receiving-icmp-messages-from-ip" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="10%" />
+<col width="84%" />
+<col width="6%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td colspan="2">Receipt of an ICMP source quench should trigger slow start</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td colspan="2">Receipt of a network unreachable, host unreachable, or source route failed
+must not cause TCP to abort the connection and the process should be informed</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td colspan="2">Receipt of a protocol unreachable, port unreachable, or fragmentation required
+and DF bit set should abort an existing connection</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Should</td>
+<td>handle time exceeded and parameter problem errors</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="application-programming-interface">
+<h4>Application Programming Interface<a class="headerlink" href="#application-programming-interface" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="67%" />
+<col width="28%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Must</td>
+<td>be a method for reporting soft errors to the process normally in an asynchronous fashion</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>Must</td>
+<td>allow process to specify TOS for segments sent on a connection</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>May</td>
+<td>pass most recently received TOS to process</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>May</td>
+<td>implement a “flush” call</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td>Must</td>
+<td>allow process to specify local IP address before either an active open or a passive open</td>
+<td>Yes (called by bind/accept or connect</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../index.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="framework.html">Framework Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="devel.html">PyStack development</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">IP Stack compliance</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#rfc1122-compliance">RFC1122 Compliance</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshoot.html">Troubleshooting</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="devel.html"
+                        title="previous chapter">PyStack development</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="troubleshoot.html"
+                        title="next chapter">Troubleshooting</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/text/compliance.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="troubleshoot.html" title="Troubleshooting"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="devel.html" title="PyStack development"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">PyStack 1 documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2013, Robin David.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

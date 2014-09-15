@@ -1,0 +1,273 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pystack.layers.tcp_application &mdash; PyStack 1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../../../_static/cloud.js"></script>
+    <link rel="top" title="PyStack 1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../../index.html">PyStack 1 documentation</a> &raquo;</li>
+
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pystack.layers.tcp_application</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Author: Robin David</span>
+<span class="sd">License: GNU GPLv3</span>
+<span class="sd">Repo: https://github.com/RobinDavid</span>
+
+<span class="sd">Copyright (c) 2012 Robin David</span>
+
+<span class="sd">PyStack is free software: you can redistribute it and/or modify</span>
+<span class="sd">it under the terms of the GNU General Public License as published by</span>
+<span class="sd">the Free Software Foundation, either version 3 of the License, or </span>
+<span class="sd">any later version http://www.gnu.org/licenses/. </span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Lock</span>
+
+<span class="kn">from</span> <span class="nn">scapy.all</span> <span class="kn">import</span> <span class="n">Raw</span>
+
+<span class="kn">from</span> <span class="nn">layer</span> <span class="kn">import</span> <span class="n">Layer</span>
+
+
+<div class="viewcode-block" id="TCPApplication"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_application.TCPApplication">[docs]</a><span class="k">class</span> <span class="nc">TCPApplication</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    TCPApplication provides the functionnalities for layer 7</span>
+<span class="sd">    protocols. So there is just connection management and buffer</span>
+<span class="sd">    reading/writing. Moreover for connection management it basically</span>
+<span class="sd">    just call the ones from tcpsession which really do the stuff.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Raw&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Init Just init class attributes like data which will act as a buffer for received data.</span>
+<span class="sd">        In addition a mutex is initialised so that data attribute can&#39;t be read and written in the same</span>
+<span class="sd">        time and so avoid improper reading..</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Layer</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mutex</span> <span class="o">=</span> <span class="n">Lock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastclient</span> <span class="o">=</span> <span class="bp">None</span>
+    
+<div class="viewcode-block" id="TCPApplication.packet_received"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_application.TCPApplication.packet_received">[docs]</a>    <span class="k">def</span> <span class="nf">packet_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        At this level a packet is Raw data so bytes. This</span>
+<span class="sd">        method acquire the mutex add received datas and release the</span>
+<span class="sd">        mutex.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastclient</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;id&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">+=</span> <span class="n">packet</span>
+        <span class="c">#print(packet)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+        </div>
+<div class="viewcode-block" id="TCPApplication.connect"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_application.TCPApplication.connect">[docs]</a>    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Just call the connect method of TCPSession layer&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowerLayers</span><span class="p">[</span><span class="s">&quot;default&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">ip</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="TCPApplication.listen"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_application.TCPApplication.listen">[docs]</a>    <span class="k">def</span> <span class="nf">listen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nb</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Just call the listen method of TCPSession layer&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lowerLayers</span><span class="p">[</span><span class="s">&quot;default&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="n">nb</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="TCPApplication.bind"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_application.TCPApplication.bind">[docs]</a>    <span class="k">def</span> <span class="nf">bind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">app</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">newinstance</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Call the bind method of TCPSession with attributes. Be careful</span>
+<span class="sd">        it is really important to understand what are attributes:</span>
+<span class="sd">        </span>
+<span class="sd">        - app: Should be a TCPApplication. So that all the clients that will</span>
+<span class="sd">        connect the server (which is self) will be attached to this tcpapplication</span>
+<span class="sd">        If no app is provided the tcpapplication used is self !</span>
+<span class="sd">        - newinstance: Define if all the clients should be linked on the same</span>
+<span class="sd">        tcpapplication (attribute app) or if should be forked for each.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">app</span> <span class="o">=</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">app</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">app</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lowerLayers</span><span class="p">[</span><span class="s">&quot;default&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">newinstance</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="TCPApplication.accept"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_application.TCPApplication.accept">[docs]</a>    <span class="k">def</span> <span class="nf">accept</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Call the TCPSession accept method &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowerLayers</span><span class="p">[</span><span class="s">&quot;default&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+    </div>
+<div class="viewcode-block" id="TCPApplication.close"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_application.TCPApplication.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Call the close of the tcpsession&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowerLayers</span><span class="p">[</span><span class="s">&quot;default&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    </div>
+<div class="viewcode-block" id="TCPApplication.transfer_packet"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_application.TCPApplication.transfer_packet">[docs]</a>    <span class="k">def</span> <span class="nf">transfer_packet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Override the transfertPacket method of Layer. Because</span>
+<span class="sd">        for a server that use the same tcpapplication for every client</span>
+<span class="sd">        the tcpsession to target is not the default me the right client.</span>
+<span class="sd">        So check if a client was sent in kwargs if it is the case send the</span>
+<span class="sd">        packet to the tcpsession of the client default otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&quot;id&quot;</span><span class="p">):</span>
+            <span class="nb">id</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&quot;id&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowerLayers</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="nb">id</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lowerLayers</span><span class="p">[</span><span class="nb">id</span><span class="p">]</span><span class="o">.</span><span class="n">send_data</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lowerLayers</span><span class="p">[</span><span class="s">&quot;default&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">send_data</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lowerLayers</span><span class="p">[</span><span class="s">&quot;default&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">send_data</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c">#Call send_data instead of send_packet</span>
+       </div>
+<div class="viewcode-block" id="TCPApplication.forge_packet"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_application.TCPApplication.forge_packet">[docs]</a>    <span class="k">def</span> <span class="nf">forge_packet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Forge the Raw packet using the datas given in parameter&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Raw</span><span class="p">(</span><span class="n">load</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="TCPApplication.fetch_data"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_application.TCPApplication.fetch_data">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fetch_data acquire the mutex in order to pop data</span>
+<span class="sd">        of the wanted size. If no size is specified return all</span>
+<span class="sd">        the datas</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">size</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[:</span><span class="n">size</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">size</span><span class="p">:]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mutex</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">s</span>
+    </div>
+<div class="viewcode-block" id="TCPApplication.connection_made"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_application.TCPApplication.connection_made">[docs]</a>    <span class="k">def</span> <span class="nf">connection_made</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        By default does nothing, but could be important</span>
+<span class="sd">        in some layer 7 implementation like SSH ..</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>  <span class="c">#By default do nothing</span>
+    
+    <span class="c">#Methods added to help pysocket</span></div>
+<div class="viewcode-block" id="TCPApplication.get_conn_addr"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_application.TCPApplication.get_conn_addr">[docs]</a>    <span class="k">def</span> <span class="nf">get_conn_addr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Return remote IP and remote Port&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lowerLayers</span><span class="p">[</span><span class="s">&quot;default&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">remoteIP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowerLayers</span><span class="p">[</span><span class="s">&quot;default&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">remotePort</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="TCPApplication.get_self_addr"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_application.TCPApplication.get_self_addr">[docs]</a>    <span class="k">def</span> <span class="nf">get_self_addr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return our IP and the port associated&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lowerLayers</span><span class="p">[</span><span class="s">&quot;default&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">localIP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowerLayers</span><span class="p">[</span><span class="s">&quot;default&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">localPort</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="TCPApplication.fetch_data_from"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_application.TCPApplication.fetch_data_from">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_data_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Shortcut for the pysocket module &quot;&quot;&quot;</span>
+        <span class="n">inf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_conn_addr</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">inf</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">inf</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">fetch_data</span><span class="p">(</span><span class="n">size</span><span class="p">))</span>
+    
+    <span class="c">#Method added to facilitate hack</span></div>
+<div class="viewcode-block" id="TCPApplication.hook_incoming"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_application.TCPApplication.hook_incoming">[docs]</a>    <span class="k">def</span> <span class="nf">hook_incoming</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Method called by tcpsession when a packet is received. Can be overriden to apply operation on incoming packets&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+    </div>
+<div class="viewcode-block" id="TCPApplication.hook_outgoing"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_application.TCPApplication.hook_outgoing">[docs]</a>    <span class="k">def</span> <span class="nf">hook_outgoing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Method called by tcpsession just before a tcp packet is crafted and sent&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">packet</span><span class="p">,</span> <span class="n">kwargs</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../../../index.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/framework.html">Framework Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/example.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/devel.html">PyStack development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/compliance.html">IP Stack compliance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/troubleshoot.html">Troubleshooting</a></li>
+</ul>
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../../index.html">PyStack 1 documentation</a> &raquo;</li>
+
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2013, Robin David.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

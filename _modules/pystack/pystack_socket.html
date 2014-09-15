@@ -1,0 +1,406 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pystack.pystack_socket &mdash; PyStack 1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../../_static/cloud.js"></script>
+    <link rel="top" title="PyStack 1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../index.html">PyStack 1 documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pystack.pystack_socket</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/python</span>
+<span class="c"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Author: Robin David</span>
+<span class="sd">License: GNU GPLv3</span>
+<span class="sd">Repo: https://github.com/RobinDavid</span>
+
+<span class="sd">Copyright (c) 2012 Robin David</span>
+
+<span class="sd">PyStack is free software: you can redistribute it and/or modify</span>
+<span class="sd">it under the terms of the GNU General Public License as published by</span>
+<span class="sd">the Free Software Foundation, either version 3 of the License, or </span>
+<span class="sd">any later version http://www.gnu.org/licenses/. </span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">from</span> <span class="nn">layers.tcp_application</span> <span class="kn">import</span> <span class="n">TCPApplication</span>
+<span class="kn">from</span> <span class="nn">pystack</span> <span class="kn">import</span> <span class="n">PyStack</span>
+<span class="kn">from</span> <span class="nn">_socket</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">layers.udp_application</span> <span class="kn">import</span> <span class="n">UDPApplication</span>
+
+
+<span class="k">class</span> <span class="nc">_TCPSocket</span><span class="p">(</span><span class="n">TCPApplication</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Internal class to wrap TCPApplication into</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">TCPApplication</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_UDPSocket</span><span class="p">(</span><span class="n">UDPApplication</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Internal class to wrap UDPApplication into</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">UDPApplication</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="socket"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket">[docs]</a><span class="k">class</span> <span class="nc">socket</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    socket class that will replace the genuine one located in _socket</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="n">AF_INET</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">SOCK_STREAM</span><span class="p">,</span> <span class="n">proto</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">app</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blocking</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stack</span> <span class="o">=</span> <span class="n">PyStack</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">family</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">AF_INET6</span><span class="p">,</span> <span class="n">AF_UNIX</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">error</span><span class="p">(</span><span class="s">&quot;Address family not supported by protocol &quot;</span><span class="o">+</span><span class="n">family</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">family</span> <span class="o">=</span> <span class="n">family</span>
+        <span class="k">if</span> <span class="nb">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">SOCK_DGRAM</span><span class="p">,</span> <span class="n">SOCK_STREAM</span><span class="p">):</span><span class="c">#SOCK_RAW, SOCK_RDM, SOCK_SEQPACKET):</span>
+            <span class="k">raise</span> <span class="n">error</span><span class="p">(</span><span class="s">&quot;Invalid argument &quot;</span><span class="o">+</span><span class="nb">type</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="nb">type</span>
+            <span class="k">if</span> <span class="n">app</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">app</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="n">SOCK_STREAM</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">_TCPSocket</span><span class="p">()</span>
+                <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="n">SOCK_DGRAM</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">_UDPSocket</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proto</span> <span class="o">=</span> <span class="n">proto</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">app</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="n">SOCK_STREAM</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">register_tcp_application</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="n">SOCK_DGRAM</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">register_udp_application</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">doreactor</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="socket.accept"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.accept">[docs]</a>    <span class="k">def</span> <span class="nf">accept</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;accept a connect in case of TCP Socket, raise an error for UDP&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">SOCK_DGRAM</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">error</span><span class="p">(</span><span class="s">&quot;[Errno 95] Operation not supported&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">app</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+            <span class="n">news</span> <span class="o">=</span> <span class="n">socket</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">SOCK_STREAM</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">blocking</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">news</span><span class="p">,</span> <span class="n">app</span><span class="o">.</span><span class="n">get_conn_addr</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="socket.bind"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.bind">[docs]</a>    <span class="k">def</span> <span class="nf">bind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">)):</span>
+        <span class="sd">&quot;&quot;&quot;Bind the application on the given port regardless of if this is an UDP or TCP socket&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">SOCK_DGRAM</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">is_udp_port_free</span><span class="p">(</span><span class="n">port</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">error</span><span class="p">(</span><span class="s">&quot;[Errno 98] Address already in use&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">SOCK_STREAM</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">is_tcp_port_free</span><span class="p">(</span><span class="n">port</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">error</span><span class="p">(</span><span class="s">&quot;[Errno 98] Address already in use&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span> <span class="c">#send ip when the stack will listen on all interfaces</span>
+</div>
+<div class="viewcode-block" id="socket.close"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Call the close function of the app&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="socket.connect"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.connect">[docs]</a>    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">)):</span>
+        <span class="sd">&quot;&quot;&quot;Call connect of the app (also valid for UDP)&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="socket.connect_ex"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.connect_ex">[docs]</a>    <span class="k">def</span> <span class="nf">connect_ex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">)):</span>
+        <span class="sd">&quot;&quot;&quot;See real socket module for info&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">1</span>
+</div>
+<div class="viewcode-block" id="socket.fileno"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.fileno">[docs]</a>    <span class="k">def</span> <span class="nf">fileno</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Should be implemented in order to fake socket class. Does not do what expected may imply</span>
+<span class="sd">        the app to crash if called.&quot;&quot;&quot;</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;Fileno called !&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">1</span>
+</div>
+<div class="viewcode-block" id="socket.getpeername"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.getpeername">[docs]</a>    <span class="k">def</span> <span class="nf">getpeername</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Return the remote IP, port of the peer &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">get_conn_addr</span><span class="p">()</span>
+    </div>
+<div class="viewcode-block" id="socket.getsockname"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.getsockname">[docs]</a>    <span class="k">def</span> <span class="nf">getsockname</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Return local IP, port&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">get_self_addr</span><span class="p">()</span>
+    </div>
+<div class="viewcode-block" id="socket.getsockopt"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.getsockopt">[docs]</a>    <span class="k">def</span> <span class="nf">getsockopt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">optname</span><span class="p">,</span> <span class="n">bufflen</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Not implemented but needed to fake socket class&quot;&quot;&quot;</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;getsocketopt called!&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">None</span>
+    </div>
+<div class="viewcode-block" id="socket.ioctl"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.ioctl">[docs]</a>    <span class="k">def</span> <span class="nf">ioctl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">control</span><span class="p">,</span> <span class="n">option</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Not implemented&quot;&quot;&quot;</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;ioctl called !&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">None</span>
+    </div>
+<div class="viewcode-block" id="socket.listen"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.listen">[docs]</a>    <span class="k">def</span> <span class="nf">listen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backlog</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Call app listen method of TCPApplication&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">SOCK_DGRAM</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">error</span><span class="p">(</span><span class="s">&quot;[Errno 95] Operation not supported&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="n">backlog</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="socket.makefile"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.makefile">[docs]</a>    <span class="k">def</span> <span class="nf">makefile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">bufsize</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Not implemented&quot;&quot;&quot;</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;Makefile is called !&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">None</span>
+</div>
+<div class="viewcode-block" id="socket.recv"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.recv">[docs]</a>    <span class="k">def</span> <span class="nf">recv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bufsize</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Read informations received in the TCPApplication&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">blocking</span><span class="p">:</span>
+            <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">fetch_data</span><span class="p">(</span><span class="n">bufsize</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">data</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">fetch_data</span><span class="p">(</span><span class="n">bufsize</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="socket.recvfrom"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.recvfrom">[docs]</a>    <span class="k">def</span> <span class="nf">recvfrom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bufsize</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return information received in the socket, but also the originating peer&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">blocking</span><span class="p">:</span>
+            <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+                <span class="n">elt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">fetch_data_from</span><span class="p">(</span><span class="n">bufsize</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">elt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">elt</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="p">(</span><span class="n">elt</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">(</span><span class="n">elt</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">elt</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">elt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">fetch_data_from</span><span class="p">(</span><span class="n">bufsize</span><span class="p">)</span>
+            <span class="k">return</span><span class="p">(</span><span class="n">elt</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">(</span><span class="n">elt</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">elt</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+</div>
+<div class="viewcode-block" id="socket.recvfrom_into"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.recvfrom_into">[docs]</a>    <span class="k">def</span> <span class="nf">recvfrom_into</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">buffer</span><span class="p">,</span> <span class="n">nbytes</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write received bytes in the given buffer. (not tested)&quot;&quot;&quot;</span>
+        <span class="n">elt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">recvfrom</span><span class="p">(</span><span class="n">nbytes</span><span class="p">)</span>
+        <span class="nb">buffer</span> <span class="o">+=</span> <span class="n">elt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">elt</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">elt</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    </div>
+<div class="viewcode-block" id="socket.recv_into"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.recv_into">[docs]</a>    <span class="k">def</span> <span class="nf">recv_into</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">buffer</span><span class="p">,</span> <span class="n">nbytes</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write received bytes in the given buffer. (not tested)&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">nbytes</span><span class="p">)</span>
+        <span class="nb">buffer</span> <span class="o">+=</span> <span class="n">data</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="socket.send"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.send">[docs]</a>    <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span> <span class="c">#Normally should check that all data has been sent</span>
+        <span class="sd">&quot;&quot;&quot;Send the given data in the socket&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">send_packet</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="socket.sendall"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.sendall">[docs]</a>    <span class="k">def</span> <span class="nf">sendall</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Also send the given data in the socket&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">send_packet</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">None</span>
+    </div>
+<div class="viewcode-block" id="socket.sendto"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.sendto">[docs]</a>    <span class="k">def</span> <span class="nf">sendto</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Send data to the given host. TCP ignore address. UDP send to the right hosts&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">SOCK_STREAM</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">send_packet</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">SOCK_DGRAM</span><span class="p">:</span>
+            <span class="n">fields</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;IP&quot;</span><span class="p">:{},</span> <span class="s">&quot;UDP&quot;</span><span class="p">:{}}</span>
+            <span class="n">fields</span><span class="p">[</span><span class="s">&quot;IP&quot;</span><span class="p">][</span><span class="s">&quot;dst&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">address</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">fields</span><span class="p">[</span><span class="s">&quot;UDP&quot;</span><span class="p">][</span><span class="s">&quot;dport&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">address</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">send_packet</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="o">**</span><span class="n">fields</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="socket.setblocking"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.setblocking">[docs]</a>    <span class="k">def</span> <span class="nf">setblocking</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flag</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set a boolean to make read write blocking or not&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">flag</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">blocking</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">elif</span> <span class="n">flag</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">blocking</span> <span class="o">=</span> <span class="bp">False</span>
+    </div>
+<div class="viewcode-block" id="socket.settimeout"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.settimeout">[docs]</a>    <span class="k">def</span> <span class="nf">settimeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Not implemented. Define binary a timeout for blocking read/write&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">flag</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">blocking</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">flag</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">blocking</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">blocking</span> <span class="o">=</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="socket.gettimeout"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.gettimeout">[docs]</a>    <span class="k">def</span> <span class="nf">gettimeout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the if blocking or not&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mi">1</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">blocking</span> <span class="k">else</span> <span class="mi">0</span>
+    </div>
+<div class="viewcode-block" id="socket.setsockopt"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.setsockopt">[docs]</a>    <span class="k">def</span> <span class="nf">setsockopt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">optname</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Not implemented&quot;&quot;&quot;</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;setsockopt called !&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">None</span>
+    </div>
+<div class="viewcode-block" id="socket.shutdown"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.shutdown">[docs]</a>    <span class="k">def</span> <span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">how</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Not implemented&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="socket.stop"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.socket.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="c">#Added by me to stop the stack</span>
+        <span class="sd">&quot;&quot;&quot;Stop the associated application&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+
+<span class="c">#----------------------</span>
+<span class="c">#------ Fonctions -----</span>
+<span class="c">#----------------------</span></div></div>
+<div class="viewcode-block" id="create_connection"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.create_connection">[docs]</a><span class="k">def</span> <span class="nf">create_connection</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">source_address</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a connection and return the socket connected&quot;&quot;&quot;</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Create connectionc called !&quot;</span><span class="p">)</span>
+    <span class="n">sock</span> <span class="o">=</span> <span class="n">socket</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">SOCK_STREAM</span><span class="p">)</span>
+    <span class="n">sock</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">address</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sock</span>
+</div>
+<div class="viewcode-block" id="gethostname"><a class="viewcode-back" href="../../api/pystack.html#pystack.pystack_socket.gethostname">[docs]</a><span class="k">def</span> <span class="nf">gethostname</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Return the hostname&quot;&quot;&quot;</span>
+    <span class="n">hostname</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;/etc/hostname&quot;</span><span class="p">,</span><span class="s">&quot;r&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+    <span class="n">hostname</span> <span class="o">=</span> <span class="n">hostname</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">hostname</span>
+
+<span class="c">#--------------------</span>
+<span class="c">#----- Constants ----</span>
+<span class="c">#--------------------</span></div>
+<span class="n">_GLOBAL_DEFAULT_TIMEOUT</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">AF_APPLETALK = 5</span>
+<span class="sd">AF_ASH = 18</span>
+<span class="sd">AF_ATMPVC = 8</span>
+<span class="sd">AF_ATMSVC = 20</span>
+<span class="sd">AF_AX25 = 3</span>
+<span class="sd">....</span>
+<span class="sd">&#39;&#39;&#39;</span>
+    
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    
+    <span class="n">s</span> <span class="o">=</span> <span class="n">socket</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">SOCK_STREAM</span><span class="p">)</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    s.bind((&quot;localhost&quot;, 8888))</span>
+<span class="sd">    s.listen(2)</span>
+<span class="sd">    cli, addr = s.accept()</span>
+<span class="sd">    </span>
+<span class="sd">    print(addr)</span>
+<span class="sd">    </span>
+<span class="sd">    cli.send(&quot;COcou&quot;)</span>
+<span class="sd">    </span>
+<span class="sd">    print(&quot;--&quot;)</span>
+<span class="sd">    </span>
+<span class="sd">    print(cli.recvfrom(512))</span>
+<span class="sd">    </span>
+<span class="sd">    cli.close()</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">connect</span><span class="p">((</span><span class="s">&quot;www.google.fr&quot;</span><span class="p">,</span> <span class="mi">80</span><span class="p">)):</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="s">&quot;GET / HTTP/1.1</span><span class="se">\r\n</span><span class="s">Host: www.google.fr</span><span class="se">\r\n</span><span class="s">Connection: Close</span><span class="se">\r\n\r\n</span><span class="s">&quot;</span>
+        <span class="n">s</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="c"># on affiche la reponse</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;NOT CONNECTED !&quot;</span><span class="p">)</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    
+    <span class="n">s</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span> <span class="c">#Stop stack</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../../index.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../text/intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../text/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../text/framework.html">Framework Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../text/usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../text/example.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../text/devel.html">PyStack development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../text/compliance.html">IP Stack compliance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../text/troubleshoot.html">Troubleshooting</a></li>
+</ul>
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../index.html">PyStack 1 documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2013, Robin David.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

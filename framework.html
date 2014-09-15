@@ -1,0 +1,325 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Framework Architecture &mdash; PyStack 1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="PyStack 1 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">PyStack 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="framework-architecture">
+<h1>Framework Architecture<a class="headerlink" href="#framework-architecture" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="modules-submodules">
+<h2>Modules/Submodules<a class="headerlink" href="#modules-submodules" title="Permalink to this headline">¶</a></h2>
+<p>All the class are located in a folder called <em>pystack</em>. Into this directory there is the following modules:</p>
+<div class="highlight-python"><pre>pystack
+  |
+  +-- kernel_filter
+  |
+  +-- pystack
+  |
+  +-- pystack_socket
+  |
+  +-- layers
+        |
+        + -- ...</pre>
+</div>
+<ul class="simple">
+<li><strong>kernel_filter</strong>: contain a module that allow blocking incoming or outgoing packets of the kernel. Basically, this is just an interface with iptables.
+This should not require to be imported in your script directly because it is already ussed by the various layers.</li>
+<li><strong>pystack</strong>: pystack is a module that provide a ready to use stack. It just create a stack assembling all the layers together and provide to right methods to
+add TCP or UDP application at the top of it.</li>
+<li><strong>pystack_socket</strong>: This module is a tricky implementation of the python socket module. It reuse the exact same syntax than socket to make the usage of pystack similar to socket. So it implement the key functions
+to adapt to pystack. All the rest is kept from socket (so the socket module is imported in this module).
+Be careful pystack_socket does not support all the function,options and socket kinds. For new just SOCK_STREAM and SOCK_DGRAM socket are supported without options.</li>
+<li><strong>layers</strong>: Contain all the different protocol implementation which is listed below.</li>
+</ul>
+<p>layers contain all the protocol implementation and two associated class (scapy_io and layers) which will be discussed below.
+Any new protocol should be put in this folder. Feel free to add your own ;)
+For now the existing protocol implementations are:</p>
+<div class="highlight-python"><pre>layers
+  |
+  +-- layer
+  +-- scapy_io
+  +-- ethernet
+  +-- arp
+  +-- ip
+  +-- tcp
+  +-- udp
+  +-- tcp_session
+  +-- tcp_application
+  +-- udp_application
+  +-- dns
+  +-- ...</pre>
+</div>
+<ul>
+<li><p class="first"><strong>layer</strong>: layer is an abstract class. This is the mother class that give the layer structure than any child class have to implement. This is discussed in detail in the next section</p>
+</li>
+<li><p class="first"><strong>scapy_io</strong>: scapy_io cannot stricly be considered as a layer(does not extend layers) but it is a part of the stack because this class provide input/output functions.
+It takes an interface on which listening on and provides two ways of listening packets.</p>
+<ul>
+<li><p class="first"><strong>reactor</strong>: reactor is imported from twisted. A reactor is a special object on which we can register <cite>Readers</cite> and once the reactor launched it will try to read in all the readers. The main advantage is that
+on thread is needed for any reader.
+.. note:</p>
+<div class="highlight-python"><pre>reactor.run() is blocking. So once launched no any further instructions can be performed.</pre>
+</div>
+</li>
+<li><p class="first"><strong>thread</strong>:This is an alternative method to reactor to be non-blocking. So if scapy_io is run with a thread the handle is given back and all the packet reception will
+be performed in the thread. Be careful this can lead thread access problems (improper reading etc).</p>
+</li>
+</ul>
+</li>
+<li><p class="first"><strong>ethernet</strong>: Ethernet protocol implementation. ethernet module use scapy_io is &#8220;under layer&#8221; (hardcoded).</p>
+</li>
+<li><p class="first"><strong>arp</strong>: ARP protocol implementation. It manage all the MAC address resolution and hold by the way a cache of MAC/IP address association.</p>
+</li>
+<li><p class="first"><strong>ip</strong>: IP protocol implementation. It assure the routing of IP address to the associated protocol (tcp/udp) and assure also the fragmentation and reassembly at
+ip level. For this purpose this layer can temporarily hold ip fragments.</p>
+</li>
+<li><p class="first"><strong>tcp</strong>: This module just do the routing according to port source and port destination to the associated tcp_session.</p>
+</li>
+<li><p class="first"><strong>udp</strong>: Same as tcp but for udp segments.</p>
+</li>
+<li><p class="first"><strong>tcp_session</strong>: tcp_session contain tcp protcol behavior itself. It maintains the sequence and acknowledgement in addition to the state of the connection.
+The name &#8220;tcp_session&#8221; has nothing to do with the OSI session layer but the name fit perfectly the purpose of this module. Any TCP connection as client or server has
+its own tcp_session to keep the state of the connection. This module brings the stateful aspect to TCP.</p>
+</li>
+<li><p class="first"><strong>tcp_application</strong>: This class represent the layer 7 of the OSI protocol. This layer just deal with &#8220;string&#8221; object which are stacked when received. Protocol of layer 7 should
+inherit this class in order to use pystack.</p>
+</li>
+<li><p class="first"><strong>udp_application</strong>: Provide the same functionnalities than tcp_application but for UDP protocols.
+.. note:</p>
+<div class="highlight-python"><pre>There is no udp_session because this protocol is stateless, so udp_application are directly connected to udp layer.</pre>
+</div>
+</li>
+<li><p class="first"><strong>dns</strong>: DNS is a udp_application that allow to do DNS name resolution in a really basic manner. A name resolution is basically the only functionality provided by dns protocol(but it was needed for tcp for name resolution).</p>
+</li>
+</ul>
+</div>
+<div class="section" id="layer-architecture">
+<h2>layer architecture<a class="headerlink" href="#layer-architecture" title="Permalink to this headline">¶</a></h2>
+<p>layer provide the basic layer structure that any protocol should implement. Among this structure the more important are the way the way layers communicate
+with the two upperlayers and lowerLayers dictionnary, but also the way to register layers each other.</p>
+<div class="section" id="code-explanation">
+<h3>Code explanation<a class="headerlink" href="#code-explanation" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Layer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lowerLayers</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upperLayers</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_upper_layer</span><span class="p">(</span><span class="s">&quot;default&quot;</span><span class="p">,</span> <span class="n">Default</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Class layer has an attribute called name which has to be modified by child class with the appropriate name. &#8220;name&#8221; will be used as key identifier in upperLayers and lowerLayers.
+Eg: Ethernet layer receive an IP packet, it will then look for the &#8220;IP&#8221; layer in upperLayer to forward the packet to.</p>
+<p>In init, a layer has both dictionnary lowerLayers and upperLayers which will respectively hold handlers for layers under and above.
+Within this dictionnaries layers are identified by their name (IP,TCP, Raw ..). A default upperLayer is added to handle packets that does not match any other
+layer. Default does nothing  when a packet is received, but you can customize the behavior of Default like logging packets etc.</p>
+<p>The IP layer has for instance the following layers:
+lowerLayers{&#8220;default&#8221;:ethernet}
+upperLayers{&#8220;TCP&#8221;:tcp,&#8221;UDP&#8221;:udp,&#8221;default&#8221;:Default}</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">register_upper_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">layer</span><span class="p">):</span> <span class="c">#Register the given layer in upperLayers with the given name</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">upperLayers</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">layer</span>
+
+<span class="k">def</span> <span class="nf">register_lower_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">layer</span><span class="p">):</span> <span class="c">#Register the given layer in lowerLayers with the gven name</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">lowerLayers</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">layer</span>
+
+<span class="k">def</span> <span class="nf">register_layer_full</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">layer</span><span class="p">):</span> <span class="c">#Register the given layer in upperLayers and itself as the layer default lowerLayers</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">register_upper_layer</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">layer</span><span class="p">)</span>
+    <span class="n">layer</span><span class="o">.</span><span class="n">register_lower_layer</span><span class="p">(</span><span class="s">&quot;default&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">register_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">):</span> <span class="c">#Idem as register_layer_full but use the layer name attribute as key identifier</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">register_layer_full</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">layer</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">unregister_upper_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span> <span class="c">#Unregister the layer identified by name in upperLayers</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">upperLayers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>All this method are really useful for registering layers together.</p>
+<p>The following methods are really important because they define a default behavior for sending, and forwarding packets from on layer to another.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">send_packet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;By default when calling send_packet it forge the packet calling</span>
+<span class="sd">    forge_packet and forward it to the lower layer calling transfer_packet&quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">transfer_packet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">forge_packet</span><span class="p">(</span><span class="n">packet</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">forge_packet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;By default does nothing but should be overriden by child class&quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+<span class="k">def</span> <span class="nf">transfer_packet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Define the default behavior when a packet should be transfered to the lower layer.</span>
+<span class="sd">    The default behavior is to call the send_packet of the default lowerlayer. This method</span>
+<span class="sd">    can be overriden by child layers&quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">lowerLayers</span><span class="p">[</span><span class="s">&quot;default&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">send_packet</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>When you want to send a packet in a layer you should call send_packet. send_packet will by default call the method which should be overriden and then
+call transfert_packet which by default call the send_packet of the &#8220;default&#8221; in lowerLayers. This is the basic process of a packet within a layer. Then
+this packet goes through all the layers until it is sent by scapy_io.</p>
+<p>The second most important method after send_packet, is packet_received. It is called when a packet is received and should then contain all the packet processing.
+By default it &#8220;decapsulate the packet and send the payload to the upperlayer referenced by the payload name.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">packet_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperLayers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperLayers</span><span class="p">[</span><span class="s">&quot;default&quot;</span><span class="p">])</span>  <span class="c">#Get the handler name, default instead</span>
+    <span class="n">kwargs</span><span class="p">[</span><span class="n">packet</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">fields</span>
+    <span class="n">target</span><span class="o">.</span><span class="n">packet_received</span><span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="n">payload</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c">#Call packet_received of the handler with the payload</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="pystack">
+<h2>pystack<a class="headerlink" href="#pystack" title="Permalink to this headline">¶</a></h2>
+<p>PyStack is a class that create a stack. It instanciate all the layers and register all them together. <strong>REF CODE</strong>
+Another significant point about pystack is that the class implement the singleton pattern overriding the <em>__new__</em> so that any component of the
+same program that will use pystack will manipulate the same stack &#8220;sharing&#8221; it (as it is the case with the real stack).</p>
+<p>The following schema summarize the all structure of the project and what is built by pystack class.</p>
+<img alt="_images/schema_pystack.jpg" src="_images/schema_pystack.jpg" />
+</div>
+<div class="section" id="pystack-socket">
+<h2>pystack_socket<a class="headerlink" href="#pystack-socket" title="Permalink to this headline">¶</a></h2>
+<p>pystack_socket intent to provide the same interface than socket but to use pystack. So the most critical functions had been reimplemented in a really really basic
+manner. All the rest is reused from socket. This will allow to use pystack in the same way than socket (but in more trivial). Indeed options, some functions and
+socket types are not supported. Only SOCK_STREAM, and SOCK_DGRAM are working.
+The __init__ methods show how tricky it is:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">socket</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="n">AF_INET</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">SOCK_STREAM</span><span class="p">,</span> <span class="n">proto</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">app</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blocking</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stack</span> <span class="o">=</span> <span class="n">PyStack</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">family</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">AF_INET6</span><span class="p">,</span> <span class="n">AF_UNIX</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">error</span><span class="p">(</span><span class="s">&quot;Address family not supported by protocol &quot;</span><span class="o">+</span><span class="n">family</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">family</span> <span class="o">=</span> <span class="n">family</span>
+        <span class="k">if</span> <span class="nb">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">SOCK_DGRAM</span><span class="p">,</span> <span class="n">SOCK_STREAM</span><span class="p">):</span><span class="c">#SOCK_RAW, SOCK_RDM, SOCK_SEQPACKET):</span>
+            <span class="k">raise</span> <span class="n">error</span><span class="p">(</span><span class="s">&quot;Invalid argument &quot;</span><span class="o">+</span><span class="nb">type</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="nb">type</span>
+            <span class="k">if</span> <span class="n">app</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">app</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="n">SOCK_STREAM</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">_TCPSocket</span><span class="p">()</span>
+                <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="n">SOCK_DGRAM</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">_UDPSocket</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proto</span> <span class="o">=</span> <span class="n">proto</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">app</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="n">SOCK_STREAM</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">register_tcp_application</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="n">SOCK_DGRAM</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">register_udp_application</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">doreactor</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Some comments about the code:</p>
+<ul class="simple">
+<li>Each time a socket is created a Pystack object is created but because it implement the singleton pattern only one among all the code will really be instanciated</li>
+<li>A family error is raised if not valid, but It is not taken in account anyway. (Only IPv4 is support for now)</li>
+<li>If the type not STREAM or DGRAM a type exception is raised whereas it should not but not implemented</li>
+<li>Depending of the type a _TCPSocket or a _UDPSocket is created. This two class just implement respectively TCPApplication and UDPApplication.</li>
+<li>Application are registered to the stack (so attached to UDP for _UDPSocket and linked to a TCPSession and attached to TCP for _TCPSocket)</li>
+</ul>
+<p>All the other methods do the same taking the same kind of arguments than socket but dealing with it differently.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Framework Architecture</a><ul>
+<li><a class="reference internal" href="#modules-submodules">Modules/Submodules</a></li>
+<li><a class="reference internal" href="#layer-architecture">layer architecture</a><ul>
+<li><a class="reference internal" href="#code-explanation">Code explanation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pystack">pystack</a></li>
+<li><a class="reference internal" href="#pystack-socket">pystack_socket</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/framework.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">PyStack 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Robin David.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

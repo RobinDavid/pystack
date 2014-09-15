@@ -1,0 +1,523 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Examples &mdash; PyStack 1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../_static/cloud.js"></script>
+    <link rel="top" title="PyStack 1 documentation" href="../index.html" />
+    <link rel="next" title="PyStack development" href="devel.html" />
+    <link rel="prev" title="Usage" href="usage.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="devel.html" title="PyStack development"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="usage.html" title="Usage"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">PyStack 1 documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="echo-server">
+<h2>Echo server<a class="headerlink" href="#echo-server" title="Permalink to this headline">¶</a></h2>
+<p>The creation of an Echo server is really straightforward. It can be done with the following code:</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18</pre></div></td><td class="code"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pystack.layers.tcp_application</span> <span class="kn">import</span> <span class="n">TCPApplication</span>
+<span class="kn">from</span> <span class="nn">pystak.pystack</span> <span class="kn">import</span> <span class="n">PyStack</span>
+
+<span class="k">class</span> <span class="nc">EchoServer</span><span class="p">(</span><span class="n">TCPApplication</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">packet_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_packet</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="c">#Just reply the exact same thing to the client</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span><span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">stack</span> <span class="o">=</span> <span class="n">PyStack</span><span class="p">()</span>
+
+    <span class="n">echoserver</span> <span class="o">=</span> <span class="n">EchoServer</span><span class="p">()</span>
+
+    <span class="n">stack</span><span class="o">.</span><span class="n">register_tcp_application</span><span class="p">(</span><span class="n">echoserver</span><span class="p">)</span>
+
+    <span class="n">echoserver</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="mi">8888</span><span class="p">,</span> <span class="n">echoserver</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+    <span class="n">echoserver</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+
+    <span class="n">stack</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">doreactor</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+<p><strong>Comments about the code:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li>The EchoServer TCP application is fairly simple, we just override packet_received to reply to the client.</li>
+<li>Line 15 the bind arguments are very important, there is no need to keep information about the client and the processing is the same for all that&#8217;s why all the client will have the same tcp application (echoserver).</li>
+<li>Default arguments for bind are <em>app=None, newinstance=False</em> so we could have call <em>echoserver.bind(8888)</em> because when no app is provided self is used.</li>
+<li>Line 18 we start the stack usin reactor, so that it keep the handle and the script wait for Ctrl+C. (If we had use thread the script would have ended up directly)</li>
+<li>Also line 18 when the user type Ctrl+C the stack.stop() is called automatically.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="client-server-using-pysocket">
+<h2>Client/Server using pysocket<a class="headerlink" href="#client-server-using-pysocket" title="Permalink to this headline">¶</a></h2>
+<p>To make socket in a similar way than the official &#8220;socket module&#8221;, pystack_socket provides an interface to socket. The only thing to do is</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">psytack.pystack_socket</span> <span class="kn">as</span> <span class="nn">socket</span>
+</pre></div>
+</div>
+<p>Then a client or a server can be done in a similar way than with socket except that, at the end the stack should be stopped.
+The following sample shows a basic example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pystack.pystack_socket</span> <span class="kn">as</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="n">s</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">connect</span><span class="p">((</span><span class="s">&quot;myserver.com&quot;</span><span class="p">,</span> <span class="mi">80</span><span class="p">)):</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="s">&#39;Hello, world</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;Received &#39;</span><span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Not connected&quot;</span><span class="p">)</span>
+
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="c">#Wait a little to avoid to get the stack destroyed before the socket is gently closed.</span>
+<span class="n">s</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span> <span class="c">#To stop the stack</span>
+</pre></div>
+</div>
+<p>Like in socket module a server can be written replacing the connect by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">s</span><span class="o">.</span><span class="n">bind</span><span class="p">((</span><span class="s">&quot;localhost&quot;</span><span class="p">,</span><span class="n">PORT</span><span class="p">))</span>
+<span class="n">s</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">cli</span><span class="p">,</span> <span class="n">addr</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last">The first parameter sent by bind is ignored by pystack. The server will only listen on the interface on which the stack is listening on. By default
+the stack use the default interface. For instance if a server is listening on the address 192.168.0.1 on port 80 trying to access the server locally will
+certainly fail because the system may resolve 192.168.0.1 as 127.0.0.1.</p>
+</div>
+</div>
+<div class="section" id="socket-module-hijacking">
+<h2>socket module hijacking<a class="headerlink" href="#socket-module-hijacking" title="Permalink to this headline">¶</a></h2>
+<p>Thank&#8217;s to pystack_socket it can be interesting to force certain scripts or program to use pystack instead of socket without modifying the source code.
+As soon as no extra socket functionalities are used this might succeed. This section shows how to do it. This is tricky and it does not work all the time
+but it might fit in simple cases. Let&#8217;s take the following code that use socket.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">socket</span>
+
+<span class="k">class</span> <span class="nc">Client</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
+        <span class="n">s</span><span class="o">.</span><span class="n">connect</span><span class="p">((</span><span class="s">&quot;myserver.com&quot;</span><span class="p">,</span> <span class="mi">5555</span><span class="p">))</span>
+        <span class="n">s</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="s">&#39;Hello, world</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+        <span class="n">s</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&#39;Received&#39;</span><span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>What we will try to do is to make <cite>Client</cite> to use pystack instead of socket. The following script does it:</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15</pre></div></td><td class="code"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pystack.pystack_socket</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s">&quot;socket_original&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s">&quot;socket&quot;</span><span class="p">]</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s">&quot;socket&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pystack_socket</span>
+
+<span class="kn">from</span> <span class="nn">test_client</span> <span class="kn">import</span> <span class="n">Client</span>
+<span class="n">c</span> <span class="o">=</span><span class="n">Client</span><span class="p">()</span>
+<span class="n">c</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+<span class="kn">from</span> <span class="nn">pystack.pystack</span> <span class="kn">import</span> <span class="n">PyStack</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">PyStack</span><span class="p">()</span> <span class="c">#Retrieve the pystack instance to stop it</span>
+<span class="n">s</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+
+<span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s">&quot;socket&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s">&quot;socket_original&quot;</span><span class="p">]</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&quot;socket_original&quot;</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+<p>Comments about the script:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>Line 1-5</strong>: Replace the socket module in sys by pystack_socket</li>
+<li><strong>Line 7-9</strong>: Import and launch the Client</li>
+<li><strong>Line 11-13</strong>: Import pystack create a PyStack object but because it implement the singleton pattern we retrieve the only instance of PyStack and we stop it.</li>
+<li><strong>Line 15-16</strong>: Put back the genuine socket module in sys.modules</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="web-server">
+<h2>Web server<a class="headerlink" href="#web-server" title="Permalink to this headline">¶</a></h2>
+<p>Making a Web server is a complex tasks. We will tkae advantage here of <em>twisted</em> functionalities. We will only manage to receive and send request. All there
+serving content part is delegated to twisted. The method used below is inspired from the one used in <a class="reference external" href="https://github.com/enki/muXTCP">muXTCP</a> .
+We will use the class Site taken from twisted.web.server that allow to serve a given static directory as web server.
+The the trick is located in the Site object which have an attribute called <em>transport</em> which take care of input/output tasks.
+We will define the transport attribute to be our TCPApplication which implies to implement additional methods.
+The following class <strong>WebServer</strong> inherit from both TCPApplication for the pystack part and _ConsumerMixin for the twisted part.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">There is certainly a nicer way to do it, but this not the purpose of this example.</p>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pystack.layers.tcp_application</span> <span class="kn">import</span> <span class="n">TCPApplication</span>
+<span class="kn">from</span> <span class="nn">twisted.web.server</span> <span class="kn">import</span> <span class="n">Site</span>
+<span class="kn">from</span> <span class="nn">twisted.web</span> <span class="kn">import</span> <span class="n">static</span>
+<span class="kn">from</span> <span class="nn">twisted.internet.abstract</span> <span class="kn">import</span> <span class="n">FileDescriptor</span>
+<span class="kn">from</span> <span class="nn">twisted.internet.abstract</span> <span class="kn">import</span> <span class="n">_ConsumerMixin</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="k">class</span> <span class="nc">WebServer</span><span class="p">(</span><span class="n">TCPApplication</span><span class="p">,</span> <span class="n">_ConsumerMixin</span><span class="p">):</span>
+    <span class="n">disconnecting</span> <span class="o">=</span> <span class="bp">False</span> <span class="c">#Required by twisted</span>
+    <span class="n">connected</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">disconnected</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">TCPApplication</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">_ConsumerMixin</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">Site</span><span class="p">(</span><span class="n">static</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s">&quot;./sitetest&quot;</span><span class="p">)))</span><span class="o">.</span><span class="n">buildProtocol</span><span class="p">(</span><span class="s">&quot;test&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">transport</span> <span class="o">=</span> <span class="bp">self</span> <span class="c">#Because we define self as transport we have to implement function normally called by twisted for a transport class</span>
+
+    <span class="k">def</span> <span class="nf">packet_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span> <span class="c">#Override TCPApplication packet_received to call the dataReceived of twisted</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastclient</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;id&quot;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;Request received&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">dataReceived</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;Something is wrong in the request:&quot;</span><span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&quot;data to send&quot;</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1000</span><span class="p">]</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">1000</span><span class="p">:]</span>
+            <span class="c">#self.send_data(x)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">send_packet</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s">&quot;id&quot;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">lastclient</span><span class="p">})</span>
+
+    <span class="k">def</span> <span class="nf">getPeer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">class</span> <span class="nc">X</span><span class="p">:</span>
+            <span class="n">host</span> <span class="o">=</span> <span class="s">&quot;myHost&quot;</span>
+            <span class="n">port</span> <span class="o">=</span> <span class="s">&quot;myPort&quot;</span>
+        <span class="k">return</span> <span class="n">X</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">getHost</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">getPeer</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">writeSequence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iovec</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">iovec</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">loseConnection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">getvalue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+<p>getPeer, getHost, loseConnection and getvalue should be present to work even though we didn&#8217;t implemented them.
+This is for the TCPApplication, the instanciation and registration toward the stack is classic.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span><span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">pystack.pystack</span> <span class="kn">import</span> <span class="n">PyStack</span>
+    <span class="n">stack</span> <span class="o">=</span> <span class="n">PyStack</span><span class="p">()</span>
+
+    <span class="n">webserver</span> <span class="o">=</span> <span class="n">WebServer</span><span class="p">()</span>
+    <span class="n">stack</span><span class="o">.</span><span class="n">register_tcp_application</span><span class="p">(</span><span class="n">webserver</span><span class="p">)</span>
+
+    <span class="n">webserver</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="n">app</span><span class="o">=</span><span class="n">webserver</span><span class="p">,</span> <span class="n">newinstance</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">webserver</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">stack</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">doreactor</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition error">
+<p class="first admonition-title">Error</p>
+<p class="last">A new webserver instance should be instanciated for each new client because twisted does not accept multiples request on the same _ConsumerMixin more than once.
+(Which is also problematic for a single client)</p>
+</div>
+</div>
+<div class="section" id="ssh-server">
+<h2>SSH server<a class="headerlink" href="#ssh-server" title="Permalink to this headline">¶</a></h2>
+<p>Creating an SSH server is made quite simple thank&#8217;s to all the twisted functionalities. It have globaly the same structure than WebServer except that we will create
+a <cite>unix.UnixSSHRealm</cite> instead of a Site.</p>
+<div class="admonition error">
+<p class="first admonition-title">Error</p>
+<p class="last">During the test I also had a problem with OpenSSHFactory which failed to read my keys. This problem is independant of pystack and is certainly due to twisted itself. This led
+me to create my own OpenSSHFactory fixing to problem which was located in getPrivateKeys.</p>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pystack.layers.tcp_application</span> <span class="kn">import</span> <span class="n">TCPApplication</span>
+<span class="kn">from</span> <span class="nn">twisted.internet.abstract</span> <span class="kn">import</span> <span class="n">_ConsumerMixin</span>
+<span class="kn">from</span> <span class="nn">twisted.conch</span> <span class="kn">import</span> <span class="n">checkers</span><span class="p">,</span> <span class="n">unix</span>
+<span class="kn">from</span> <span class="nn">twisted.conch.openssh_compat</span> <span class="kn">import</span> <span class="n">factory</span>
+<span class="kn">from</span> <span class="nn">twisted.conch.openssh_compat.factory</span> <span class="kn">import</span> <span class="n">OpenSSHFactory</span>
+<span class="kn">from</span> <span class="nn">twisted.cred</span> <span class="kn">import</span> <span class="n">portal</span><span class="p">,</span> <span class="n">checkers</span> <span class="k">as</span> <span class="n">chk</span>
+
+<span class="k">class</span> <span class="nc">MyFactory</span><span class="p">(</span><span class="n">OpenSSHFactory</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;I need to create my factory because OpenSSHFactory fail when reading /etc/ssh and all keys</span>
+<span class="sd">    Because some are not recognised it return None but no test is made</span>
+<span class="sd">    So I just added &quot;if key:&quot; at the fourth last line of getPrivateKeys&#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">getPrivateKeys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">twisted.python</span> <span class="kn">import</span> <span class="n">log</span>
+        <span class="kn">from</span> <span class="nn">twisted.python.util</span> <span class="kn">import</span> <span class="n">runAsEffectiveUser</span>
+        <span class="kn">from</span> <span class="nn">twisted.conch.ssh</span> <span class="kn">import</span> <span class="n">keys</span>
+        <span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">errno</span>
+        <span class="n">privateKeys</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataRoot</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">filename</span><span class="p">[:</span><span class="mi">9</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;ssh_host_&#39;</span> <span class="ow">and</span> <span class="n">filename</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">:]</span><span class="o">==</span><span class="s">&#39;_key&#39;</span><span class="p">:</span>
+                <span class="n">fullPath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataRoot</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">key</span> <span class="o">=</span> <span class="n">keys</span><span class="o">.</span><span class="n">Key</span><span class="o">.</span><span class="n">fromFile</span><span class="p">(</span><span class="n">fullPath</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">IOError</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">errno</span> <span class="o">==</span> <span class="n">errno</span><span class="o">.</span><span class="n">EACCES</span><span class="p">:</span>
+                        <span class="c"># Not allowed, let&#39;s switch to root</span>
+                        <span class="n">key</span> <span class="o">=</span> <span class="n">runAsEffectiveUser</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">keys</span><span class="o">.</span><span class="n">Key</span><span class="o">.</span><span class="n">fromFile</span><span class="p">,</span> <span class="n">fullPath</span><span class="p">)</span>
+                        <span class="n">keyType</span> <span class="o">=</span> <span class="n">keys</span><span class="o">.</span><span class="n">objectType</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">keyObject</span><span class="p">)</span>
+                        <span class="n">privateKeys</span><span class="p">[</span><span class="n">keyType</span><span class="p">]</span> <span class="o">=</span> <span class="n">key</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="s">&#39;bad private key file </span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">key</span><span class="p">:</span> <span class="c">#Just to add this fucking Line !</span>
+                        <span class="n">keyType</span> <span class="o">=</span> <span class="n">keys</span><span class="o">.</span><span class="n">objectType</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">keyObject</span><span class="p">)</span>
+                        <span class="n">privateKeys</span><span class="p">[</span><span class="n">keyType</span><span class="p">]</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="k">return</span> <span class="n">privateKeys</span>
+
+<span class="k">class</span> <span class="nc">SSHServer</span><span class="p">(</span><span class="n">TCPApplication</span><span class="p">,</span> <span class="n">_ConsumerMixin</span><span class="p">):</span>
+    <span class="n">disconnecting</span> <span class="o">=</span> <span class="bp">False</span> <span class="c">#Required by twisted</span>
+    <span class="n">connected</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">disconnected</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">TCPApplication</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">_ConsumerMixin</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c">#t = factory.OpenSSHFactory()</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">MyFactory</span><span class="p">()</span> <span class="c">#Use my factory instead of the original one</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">portal</span> <span class="o">=</span> <span class="n">portal</span><span class="o">.</span><span class="n">Portal</span><span class="p">(</span><span class="n">unix</span><span class="o">.</span><span class="n">UnixSSHRealm</span><span class="p">())</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">portal</span><span class="o">.</span><span class="n">registerChecker</span><span class="p">(</span><span class="n">checkers</span><span class="o">.</span><span class="n">UNIXPasswordDatabase</span><span class="p">())</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">portal</span><span class="o">.</span><span class="n">registerChecker</span><span class="p">(</span><span class="n">checkers</span><span class="o">.</span><span class="n">SSHPublicKeyDatabase</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">checkers</span><span class="o">.</span><span class="n">pamauth</span><span class="p">:</span>
+            <span class="n">t</span><span class="o">.</span><span class="n">portal</span><span class="o">.</span><span class="n">registerChecker</span><span class="p">(</span><span class="n">chk</span><span class="o">.</span><span class="n">PluggableAuthenticationModulesChecker</span><span class="p">())</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">dataRoot</span> <span class="o">=</span> <span class="s">&#39;/etc/ssh&#39;</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">moduliRoot</span> <span class="o">=</span> <span class="s">&#39;/etc/ssh&#39;</span>
+
+        <span class="n">t</span><span class="o">.</span><span class="n">startFactory</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">buildProtocol</span><span class="p">(</span><span class="s">&quot;test&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">transport</span> <span class="o">=</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">connection_made</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">connectionMade</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">packet_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span> <span class="c">#Override TCPApplication packet_received to call the dataReceived of twisted</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;Request received&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">dataReceived</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;Something is wrong in the request:&quot;</span><span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;Write data&quot;</span><span class="p">)</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1000</span><span class="p">]</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">1000</span><span class="p">:]</span>
+            <span class="c">#self.send_data(x)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">send_packet</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">getPeer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">class</span> <span class="nc">X</span><span class="p">:</span>
+            <span class="n">host</span> <span class="o">=</span> <span class="s">&quot;myHost&quot;</span>
+            <span class="n">port</span> <span class="o">=</span> <span class="s">&quot;myPort&quot;</span>
+        <span class="k">return</span> <span class="n">X</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">getHost</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">getPeer</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">writeSequence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iovec</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">iovec</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">logPrefix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;pystackSSHServer&quot;</span>
+
+    <span class="k">def</span> <span class="nf">setTcpNoDelay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tog</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">loseConnection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">getvalue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+<p>Then starting the server works the exact same manner than WebServer</p>
+<div class="admonition caution">
+<p class="first admonition-title">Caution</p>
+<p class="last">The close of a session does not always work fine.</p>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span><span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">pystack.pystack</span> <span class="kn">import</span> <span class="n">PyStack</span>
+    <span class="n">stack</span> <span class="o">=</span> <span class="n">PyStack</span><span class="p">()</span>
+
+    <span class="n">sshserver</span> <span class="o">=</span> <span class="n">SSHServer</span><span class="p">()</span>
+    <span class="n">stack</span><span class="o">.</span><span class="n">register_tcp_application</span><span class="p">(</span><span class="n">sshserver</span><span class="p">)</span>
+
+    <span class="n">sshserver</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="n">app</span><span class="o">=</span><span class="n">sshserver</span><span class="p">,</span> <span class="n">newinstance</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">sshserver</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">stack</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">doreactor</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../index.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="framework.html">Framework Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#echo-server">Echo server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#client-server-using-pysocket">Client/Server using pysocket</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#socket-module-hijacking">socket module hijacking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#web-server">Web server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ssh-server">SSH server</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="devel.html">PyStack development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compliance.html">IP Stack compliance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshoot.html">Troubleshooting</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="usage.html"
+                        title="previous chapter">Usage</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="devel.html"
+                        title="next chapter">PyStack development</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/text/example.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="devel.html" title="PyStack development"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="usage.html" title="Usage"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">PyStack 1 documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2013, Robin David.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

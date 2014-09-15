@@ -1,0 +1,280 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Usage &mdash; PyStack 1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../_static/cloud.js"></script>
+    <link rel="top" title="PyStack 1 documentation" href="../index.html" />
+    <link rel="next" title="Examples" href="example.html" />
+    <link rel="prev" title="Framework Architecture" href="framework.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="example.html" title="Examples"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="framework.html" title="Framework Architecture"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">PyStack 1 documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="stack-crafting">
+<h2>Stack crafting<a class="headerlink" href="#stack-crafting" title="Permalink to this headline">¶</a></h2>
+<p>Once a protocol modified or a new layer created changes must be applied to a network stack. There is two solution.
+The first solution is to modify directly the class <strong>PyStack</strong> located in <em>pystack.pystack</em>.
+The second solution is to recreate as small stack by hand according to our needs.</p>
+<p>Rebuilding a stack by hand for a connection which is fairly simple. The following piece of code shows how to do it in the most easiest manner.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pystack.layers.ethernet</span> <span class="kn">import</span> <span class="n">EthernetProtocol</span>
+<span class="kn">from</span> <span class="nn">pystack.layers.ip</span> <span class="kn">import</span> <span class="n">IPProtocol</span>
+<span class="kn">from</span> <span class="nn">pystack.layers.arp</span> <span class="kn">import</span> <span class="n">ARPProtocol</span>
+<span class="kn">from</span> <span class="nn">pystack.layers.tcp</span> <span class="kn">import</span> <span class="n">TCPProtocol</span>
+<span class="kn">from</span> <span class="nn">pystack.layers.tcp_session</span> <span class="kn">import</span> <span class="n">TCPSession</span>
+<span class="kn">from</span> <span class="nn">pystack.layers.tcp_application</span> <span class="kn">import</span> <span class="n">TCPApplication</span>
+
+<span class="n">interface</span> <span class="o">=</span> <span class="s">&quot;eth0&quot;</span>
+<span class="n">eth</span> <span class="o">=</span> <span class="n">EthernetProtocol</span><span class="p">(</span><span class="n">interface</span><span class="p">)</span>
+<span class="n">ip</span> <span class="o">=</span> <span class="n">IPProtocol</span><span class="p">()</span>
+<span class="n">eth</span><span class="o">.</span><span class="n">register_layer</span><span class="p">(</span><span class="n">ip</span><span class="p">)</span>
+<span class="n">arp</span> <span class="o">=</span> <span class="n">ARPProtocol</span><span class="p">(</span><span class="n">interface</span><span class="p">)</span>
+<span class="n">eth</span><span class="o">.</span><span class="n">register_layer</span><span class="p">(</span><span class="n">arp</span><span class="p">)</span>
+<span class="n">tcp</span> <span class="o">=</span> <span class="n">TCPProtocol</span><span class="p">()</span>
+<span class="n">ip</span><span class="o">.</span><span class="n">register_layer</span><span class="p">(</span><span class="n">tcp</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition caution">
+<p class="first admonition-title">Caution</p>
+<p class="last">The DNS layer has not been added, it not useful unless you intent to perfom name resolutions.</p>
+</div>
+<p>Then you can create a create for instance a tcp_application that will listen on port 7777. To do such, we should create a TCPSession
+a TCPApplication register them each other and then link the TCPSession to the TCP layer.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">tcpsession</span> <span class="o">=</span> <span class="n">TCPSession</span><span class="p">(</span><span class="n">interface</span><span class="p">)</span>
+<span class="n">tcp</span><span class="o">.</span><span class="n">register_layer</span><span class="p">(</span><span class="n">tcpsession</span><span class="p">)</span>
+<span class="n">conn</span> <span class="o">=</span> <span class="n">TCPApplication</span><span class="p">()</span>
+<span class="n">tcpsession</span><span class="o">.</span><span class="n">register_layer</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+<span class="n">conn</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="mi">7777</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally we should start listening on the given interface using a reactor(True) or a thread(False)</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">eth</span><span class="o">.</span><span class="n">start_listening</span><span class="p">(</span><span class="n">doreactor</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="client">
+<h2>Client<a class="headerlink" href="#client" title="Permalink to this headline">¶</a></h2>
+<p>This section will show how to create a small TCP client using pystack. The usage of the PyStack class makes the client creation easy. The following
+program create a TCP client which connnect to a web server. What is sent is not really important.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">pystack.pystack</span> <span class="kn">import</span> <span class="n">PyStack</span>
+<span class="kn">from</span> <span class="nn">pystack.layers.tcp_application</span> <span class="kn">import</span> <span class="n">TCPApplication</span>
+
+<span class="n">stack</span> <span class="o">=</span> <span class="n">PyStack</span><span class="p">()</span> <span class="c">#Create a stack</span>
+
+<span class="n">conn</span> <span class="o">=</span> <span class="n">TCPApplication</span><span class="p">()</span> <span class="c">#Create a TCPApplication</span>
+<span class="n">stack</span><span class="o">.</span><span class="n">register_tcp_application</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span> <span class="c">#Register the application to the stack which will manage to create the TCPSession etc.</span>
+<span class="n">stack</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">doreactor</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span> <span class="c">#Run the stack to start listening using a thread to make it non-blocking</span>
+
+<span class="k">if</span> <span class="n">conn</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">&quot;myserver.com&quot;</span><span class="p">,</span> <span class="mi">80</span><span class="p">):</span> <span class="c">#Connect to the given server</span>
+
+    <span class="n">conn</span><span class="o">.</span><span class="n">send_packet</span><span class="p">(</span><span class="s">&quot;GET / HTTP/1.0</span><span class="se">\r\n</span><span class="s">.......</span><span class="se">\r\n\r\n</span><span class="s">&quot;</span><span class="p">)</span> <span class="c">#Send the request to the server</span>
+
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="c">#Sleep to wait for an answer.</span>
+
+    <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span> <span class="c">#Close the connection</span>
+
+<span class="n">stack</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span> <span class="c">#Stop the stack</span>
+</pre></div>
+</div>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<dl class="last docutils">
+<dt>There are important things to notice in this script:</dt>
+<dd><ul class="first last simple">
+<li>By default a tcp_application just store bytes received. To get the answer we should use <cite>conn.fetch_data()</cite></li>
+<li>It is important at the end to stop the stack gently <strong>otherwise iptables rules may remains in netfilter.</strong></li>
+</ul>
+</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="server">
+<h2>Server<a class="headerlink" href="#server" title="Permalink to this headline">¶</a></h2>
+<p>In order to make a server the bind method should be discussed because it differ from the socket bind approach.</p>
+<dl class="classmethod">
+<dt id="bind">
+<em class="property">classmethod </em><tt class="descname">bind</tt><big>(</big><em>self</em>, <em>port</em><span class="optional">[</span>, <em>app=None</em>, <em>newinstance=False</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#bind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call the bind method of the TCPSession with the given attributes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>port</strong> &#8211; port to listen on</li>
+<li><strong>app</strong> &#8211; Should be a TCPApplication. All the clients connecting to the server will be attached to this application. If no app is provided the tcpapplication used is self !</li>
+<li><strong>newinstance</strong> &#8211; Define if all the clients should be linked on the same tcpapplication (attribute app) or if it should be forked for each</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<p>The following schema summarize all the parameters combinations and the effect it produce when a client connect.
+We consider in this schema <cite>conn = TCPApplication()</cite>, and conn is the application that will be bind.</p>
+<img alt="../_images/bind.jpg" class="align-center" src="../_images/bind.jpg" />
+<p>In the end to make a server the code is similar to client. The only thing to modify is to change <cite>conn.connect(&#8220;myserver.com&#8221;, 80)</cite> by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">conn</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="mi">8888</span><span class="p">)</span> <span class="c">#Without argument the TCPApplication use for new client is conn and the application is not forked</span>
+<span class="n">conn</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">s</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="modifying-the-stack-behavior">
+<h2>Modifying the stack behavior<a class="headerlink" href="#modifying-the-stack-behavior" title="Permalink to this headline">¶</a></h2>
+<p>There is no predefined way to modify the stack behavior. It depends of your needs of the protocols involved and of the requirements.
+Letting the user free of modifying anything in the code is the best solution.</p>
+<p>The following example will override the _send_SYNACK method to modify the packet sent in response to a SYN. In this scenario we modify the sequence number
+to put it at an arbitrary value 5555.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">tcpsession_modified</span><span class="p">(</span><span class="n">TCPSession</span><span class="p">):</span>
+
+  <span class="k">def</span> <span class="nf">_send_SYNACK</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">):</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">seqNo</span> <span class="o">=</span> <span class="mi">5555</span> <span class="c">#Change the sequence number</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">nextAck</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">seqNo</span> <span class="c">#Does not change the ack value</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">send_packet</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">SYN</span><span class="o">+</span><span class="n">ACK</span><span class="p">)</span> <span class="c">#Call send_packet without modifying flags</span>
+</pre></div>
+</div>
+<p>Then to make our clients and server to use this TCP session class instead of the classic one, either we recreate the stack by hand <em class="xref std std-ref">Stack crafting</em> (above) or
+we modify the PyStack class to make it uses tcpsession_modified.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../index.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="framework.html">Framework Architecture</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#stack-crafting">Stack crafting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#client">Client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#server">Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#modifying-the-stack-behavior">Modifying the stack behavior</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="devel.html">PyStack development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compliance.html">IP Stack compliance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshoot.html">Troubleshooting</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="framework.html"
+                        title="previous chapter">Framework Architecture</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="example.html"
+                        title="next chapter">Examples</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/text/usage.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="example.html" title="Examples"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="framework.html" title="Framework Architecture"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">PyStack 1 documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2013, Robin David.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

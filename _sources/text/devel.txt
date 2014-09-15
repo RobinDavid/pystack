@@ -1,0 +1,46 @@
+PyStack development
+*******************
+
+About the project
+=================
+
+PyStack use Github as repository and is available at `https://github.com/RobinDavid/pystack <https://github.com/RobinDavid/pystack>`_ .
+
+Because I am the only developer of the project I use Github to host it. Feel free to fork it
+and to contribute enhancing the stack functionalities or by adding new protocols. I will be happy
+to merge them into the main repo.
+
+How to Contribute
+=================
+
+* Fork the project and add new functionalities
+* Add explanation or examples to this documentation
+* Found a bug, report it on `issues <https://github.com/RobinDavid/pystack/issues>`_
+
+
+TODO list
+=========
+
+Here is the list of all the enhancement that are planned to be added to the project:
+
+* Writing support for IPv6 protocol
+* In PyStack when listening, listening on all available interface (lo) included and ensure the routing between the different interfaces. *This represent a lot of work*
+* Writing a filter for ARP which packets are not blocked
+* Writing a kernel module to decide either to keep a packet or not (better than using iptables but less portables)
+* Manage manual fragmentation (now use fragment function of scapy)
+
+Technical todo:
+
+* Send ICMP time exceeded on reassembly timeout
+* In send_packet of TCPSession put ack value to 0 if ack flag not set
+* Create a timer hypervisor, which can call a callback method when a timer exceeded.
+* Add a timestamp to each ARP entries in the cache to make them expire after 20 minutes
+* Manage simultaneous passive and active close deadlock.
+
+Extending Pystack adding layers/protocols
+=========================================
+
+If you create a new layer/protocol feel free to contact me, and I will manage to merge it with the current to make
+it available for all.
+
+To achieve such the best is to fork the project on Github apply our changes and then I merge the modification in the main branch or in a devel branch.

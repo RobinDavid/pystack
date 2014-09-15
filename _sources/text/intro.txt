@@ -1,0 +1,53 @@
+Introduction
+************
+
+About PyStack
+=============
+
+Pystack is a framework developped above the scapy framework to bring some
+network stateful functionality. `Scapy <http://www.secdev.org/projects/scapy/doc/>`_ is used in PyStack for input/output
+using raw sockets and more especialy ``L2ListenSocket``. But also to craft
+and decode packets. Then pystack is built above multiple protocols implemen-
+tations themselves architectured into a sack which allow the different layers to
+communicate. It **brings the IP stack in userland** and then allow to do anything
+on network packets, modify the network stack behavior without patching the
+Linux kernel. PyStack took his first inspiration from the old project muXTCP presented at
+22C3 and keep some of its principles.
+
+.. caution::
+  PyStack is still at an experimental level of development. The stack want to stay minimalistic and then can become very unstable
+  in case of specific event on the network. Moreover it can induce some side effect due to the usage of iptables.
+
+How it works
+============
+
+PyStack has been implemented in python, and act as a subversive stack from the kernel
+point of view which have no control on it. To work simultaneously on the same
+host pystack need to alter the kernel stack behavior by blocking outgoing packets
+on the given ports using netfilter. Indeed when a subversive stack establish a
+connection to a remote host, any packet incoming packet from this host will
+be reset by the kernel which didn’t instanciated the connection. That’s why
+some host and port will be momentaneously blocked by the interfering stack.
+The only thing to remember is that pystack allow to personalize the TCP/IP stack
+behavior in a per/connection manner. The behavior can be different for any
+connection. Finally the overall advantage of it is that it run above the Linux
+Kernel stack so it does not disturb the stability of the whole system and the
+pystack is protected from Kernel panic because it works in userland.
+
+What is the goal ?
+==================
+
+The global goal of PyStack is to give the control of a network stack in userland. Basically in networking you can manipulate
+raw packets crafting them or manipulate packets at application layer with sockets modules. But in between no python module allow to
+manipulate from the Ethernet to Application layer. This is not a problem for protocol like UDP for which packets can be crafted easily but for 
+stateful protocols like TCP it becomes far more complicated. Various things that can be accomplished with PyStack are:
+
+.. note::
+  The main goal of this project is to provide a simple enough stack to allow anybody to hack into in order to obtain its own behavior.
+
+* Modifying the protocols behavior (Ethernet, ARP, IP, TCP)
+* Quickly prototyping protocols, or protocols functionnalities like (SYN Cookies, TCPCT, TFO TCP Fast Open) or any new fancy stuff
+* Pentesting infrastructures playing with fragmentation, or weird behavior
+* Fool fingerprinting tools or testing our own
+* Or just get stack control from the top/bottom without hacking into the kernel ;)
+

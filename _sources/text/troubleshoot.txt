@@ -1,0 +1,18 @@
+Troubleshooting
+***************
+
+FAQ
+===
+
+Pystack let iptables rules in filter table
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This mean the stack is been shutdown suddently or that as socket has not been closed.
+Iptables is a weakness of pystack because it induce this kind of side effects. 
+
+
+Getting Help
+============
+
+For any help you can open an issue on `Github <https://github.com/RobinDavid/pystack/issues>`_ I will be directly
+notified.

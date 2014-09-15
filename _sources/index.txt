@@ -1,0 +1,77 @@
+PyStack
+*******
+
+Pystack, is a python framework that allow to create small TCP/IP stacks in an easy manner in order to obtain a wanted behavior.
+The applications are multiples and there is currently no any module that provide similar functionnalities in python.
+
+It is developped above the `Scapy <http://www.secdev.org/projects/scapy/doc/>`_ framework to bring some
+network stateful functionalities adding to it multiple protocols implementations themselves architectured into a stack which allow the different layers to
+communicate. All this **brings the IP stack in userland** and then allow to do anything
+on network packets like modifying the network stack behavior without patching the Linux kernel.
+
+
+News
+****
+
+**1 March 2013**
+    First version of the documentation generated using Sphinx
+
+**12 December 2012**
+    First Alpha version of Pystack finalized
+
+Documentation
+*************
+
+.. toctree::
+   :maxdepth: 2
+
+   text/intro
+   text/installation
+   text/framework
+   text/usage
+   text/example
+   text/devel
+   text/compliance
+   text/troubleshoot
+
+
+:ref:`genindex`
+
+Download
+********
+
+Stable 1.0:
+   * `Source code <https://github.com/RobinDavid/pystack>`_
+   * `Source .gz <https://github.com/RobinDavid/pystack>`_
+
+Latest dev:
+   * `Source code <https://github.com/RobinDavid/pystack>`_
+
+
+Changes
+*******
+
+1.0:
+
+   * Initial version with Ethernet, ARP, IP, TCP, UDP, DNS support
+   * Relative stability for TCP protocol sessions
+   * Code comments with docstring
+   * pystack module which assemble a fully working stack
+   * pysocket which recreate socket module but using pystack
+
+Contacts
+********
+
+For any questions I recommend you to contact me on Github.
+
+As I am the only maintainer of the project I might take some time to reply but be sure
+I will find a minute to reply you as soon as I can ;)
+
+
+Indices and tables
+******************
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+

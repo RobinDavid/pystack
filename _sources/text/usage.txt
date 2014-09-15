@@ -1,0 +1,134 @@
+Usage
+*****
+
+Stack crafting
+==============
+.. _my-reference-label:
+Once a protocol modified or a new layer created changes must be applied to a network stack. There is two solution.
+The first solution is to modify directly the class **PyStack** located in *pystack.pystack*.
+The second solution is to recreate as small stack by hand according to our needs.
+
+Rebuilding a stack by hand for a connection which is fairly simple. The following piece of code shows how to do it in the most easiest manner.
+
+::
+
+  from pystack.layers.ethernet import EthernetProtocol
+  from pystack.layers.ip import IPProtocol
+  from pystack.layers.arp import ARPProtocol
+  from pystack.layers.tcp import TCPProtocol
+  from pystack.layers.tcp_session import TCPSession
+  from pystack.layers.tcp_application import TCPApplication
+
+  interface = "eth0"
+  eth = EthernetProtocol(interface)
+  ip = IPProtocol()
+  eth.register_layer(ip)
+  arp = ARPProtocol(interface)
+  eth.register_layer(arp)
+  tcp = TCPProtocol()
+  ip.register_layer(tcp)
+
+.. caution::
+  The DNS layer has not been added, it not useful unless you intent to perfom name resolutions.
+
+Then you can create a create for instance a tcp_application that will listen on port 7777. To do such, we should create a TCPSession
+a TCPApplication register them each other and then link the TCPSession to the TCP layer.
+
+::
+
+  tcpsession = TCPSession(interface)
+  tcp.register_layer(tcpsession)
+  conn = TCPApplication()
+  tcpsession.register_layer(conn)
+  conn.bind(7777)
+
+Finally we should start listening on the given interface using a reactor(True) or a thread(False)
+
+::
+
+  eth.start_listening(doreactor=True)
+ 
+
+Client
+======
+
+This section will show how to create a small TCP client using pystack. The usage of the PyStack class makes the client creation easy. The following
+program create a TCP client which connnect to a web server. What is sent is not really important.
+
+::
+
+    import time
+    from pystack.pystack import PyStack
+    from pystack.layers.tcp_application import TCPApplication
+
+    stack = PyStack() #Create a stack
+    
+    conn = TCPApplication() #Create a TCPApplication
+    stack.register_tcp_application(conn) #Register the application to the stack which will manage to create the TCPSession etc.
+    stack.run(doreactor=False) #Run the stack to start listening using a thread to make it non-blocking 
+    
+    if conn.connect("myserver.com", 80): #Connect to the given server
+    
+        conn.send_packet("GET / HTTP/1.0\r\n.......\r\n\r\n") #Send the request to the server
+     
+        time.sleep(10) #Sleep to wait for an answer.
+    
+        conn.close() #Close the connection
+    
+    stack.stop() #Stop the stack
+
+.. important::
+  There are important things to notice in this script:
+    * By default a tcp_application just store bytes received. To get the answer we should use `conn.fetch_data()`
+    * It is important at the end to stop the stack gently **otherwise iptables rules may remains in netfilter.**
+
+Server
+======
+
+In order to make a server the bind method should be discussed because it differ from the socket bind approach.
+
+.. py:classmethod:: bind(self, port[, app=None, newinstance=False])
+
+  Call the bind method of the TCPSession with the given attributes.
+
+  :param port: port to listen on
+  :param app: Should be a TCPApplication. All the clients connecting to the server will be attached to this application. If no app is provided the tcpapplication used is self !
+  :param newinstance: Define if all the clients should be linked on the same tcpapplication (attribute app) or if it should be forked for each
+
+The following schema summarize all the parameters combinations and the effect it produce when a client connect.
+We consider in this schema `conn = TCPApplication()`, and conn is the application that will be bind.
+
+.. image:: ../images/bind.jpg
+  :align: center
+
+In the end to make a server the code is similar to client. The only thing to modify is to change `conn.connect("myserver.com", 80)` by:
+
+::
+
+  conn.bind(8888) #Without argument the TCPApplication use for new client is conn and the application is not forked
+  conn.listen(2)
+      
+  s = conn.accept()
+
+
+Modifying the stack behavior
+============================
+
+There is no predefined way to modify the stack behavior. It depends of your needs of the protocols involved and of the requirements.
+Letting the user free of modifying anything in the code is the best solution.
+
+The following example will override the _send_SYNACK method to modify the packet sent in response to a SYN. In this scenario we modify the sequence number
+to put it at an arbitrary value 5555.
+
+::
+
+  class tcpsession_modified(TCPSession):
+  
+    def _send_SYNACK(self, packet):
+        self.seqNo = 5555 #Change the sequence number
+        self.nextAck = self.seqNo #Does not change the ack value
+        self.send_packet(None, SYN+ACK) #Call send_packet without modifying flags
+
+Then to make our clients and server to use this TCP session class instead of the classic one, either we recreate the stack by hand :ref:`Stack crafting` (above) or
+we modify the PyStack class to make it uses tcpsession_modified.
+

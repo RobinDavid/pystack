@@ -1,0 +1,241 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pystack.layers.scapy_io &mdash; PyStack 1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../../../_static/cloud.js"></script>
+    <link rel="top" title="PyStack 1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../../index.html">PyStack 1 documentation</a> &raquo;</li>
+
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pystack.layers.scapy_io</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Author: Robin David</span>
+<span class="sd">License: GNU GPLv3</span>
+<span class="sd">Repo: https://github.com/RobinDavid</span>
+
+<span class="sd">Copyright (c) 2012 Robin David</span>
+
+<span class="sd">PyStack is free software: you can redistribute it and/or modify</span>
+<span class="sd">it under the terms of the GNU General Public License as published by</span>
+<span class="sd">the Free Software Foundation, either version 3 of the License, or </span>
+<span class="sd">any later version http://www.gnu.org/licenses/. </span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">from</span> <span class="nn">scapy.all</span> <span class="kn">import</span> <span class="n">L2ListenSocket</span><span class="p">,</span> <span class="n">sendp</span><span class="p">,</span> <span class="n">MTU</span>
+<span class="kn">from</span> <span class="nn">twisted.internet</span> <span class="kn">import</span> <span class="n">base</span><span class="p">,</span> <span class="n">reactor</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Thread</span>
+
+
+<div class="viewcode-block" id="ScapyIO"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.scapy_io.ScapyIO">[docs]</a><span class="k">class</span> <span class="nc">ScapyIO</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">BasePort</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    SacpyIO play the role of interface with Input/Output functions</span>
+<span class="sd">    of Scapy. So all the packets that are received and sent pass</span>
+<span class="sd">    through here. To receive packet ScapyIO use a L2ListenSocket object.</span>
+<span class="sd">    Then to read packets two methods are implemented, either twisted reactor</span>
+<span class="sd">    add a reader on the socket or a thread that will loop reading packet in</span>
+<span class="sd">    the socket. To send packet the sendp method is called</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        ScapyIO extends BasePort, so this is easier with reader.</span>
+<span class="sd">        It also create the L2ListenSocket but do not listen on it yet.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">base</span><span class="o">.</span><span class="n">BasePort</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reactor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span> <span class="o">=</span> <span class="n">interface</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">handler</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">socket</span> <span class="o">=</span> <span class="n">L2ListenSocket</span><span class="p">(</span><span class="n">iface</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="p">,</span> <span class="n">promisc</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">th</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="bp">False</span>
+        
+<div class="viewcode-block" id="ScapyIO.register_handler"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.scapy_io.ScapyIO.register_handler">[docs]</a>    <span class="k">def</span> <span class="nf">register_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">handler</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Register an handler for the packet received. We can put multiples</span>
+<span class="sd">        ones but in the classical case there will be one which is the Ethernet</span>
+<span class="sd">        layer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">handler</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+        </div>
+<div class="viewcode-block" id="ScapyIO.start_listening"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.scapy_io.ScapyIO.start_listening">[docs]</a>    <span class="k">def</span> <span class="nf">start_listening</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">doreactor</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Start listening on the socket using the appropriate method.</span>
+<span class="sd">        If reactor is choosen it adds a reader on the socket and create</span>
+<span class="sd">        a callback that will be able to check with the user want to stop.</span>
+<span class="sd">        Note that signalHandlers are disabled for the reactor.</span>
+<span class="sd">        If not reactor is choosen then a thread is used and will be started</span>
+<span class="sd">        enclosed in the _do_read_thread method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">doreactor</span><span class="p">:</span>
+            <span class="n">reactor</span><span class="o">.</span><span class="n">addReader</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="n">reactor</span><span class="o">.</span><span class="n">callWhenRunning</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_reactor_callback</span><span class="p">)</span>
+            <span class="n">reactor</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">installSignalHandlers</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">th</span> <span class="o">=</span> <span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_do_read_thread</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">th</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        </div>
+    <span class="k">def</span> <span class="nf">_do_read_thread</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Read the socket endlessly and call the handler</span>
+<span class="sd">        for each packet. But it check every loop than stop</span>
+<span class="sd">        is not activated</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">packet</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">MTU</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">handler</span><span class="p">:</span>
+                <span class="n">h</span><span class="o">.</span><span class="n">packet_received</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="ScapyIO.fileno"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.scapy_io.ScapyIO.fileno">[docs]</a>    <span class="k">def</span> <span class="nf">fileno</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Needed for the reader&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">ins</span><span class="o">.</span><span class="n">fileno</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="ScapyIO.doRead"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.scapy_io.ScapyIO.doRead">[docs]</a>    <span class="k">def</span> <span class="nf">doRead</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method called when the reader read a packet</span>
+<span class="sd">        in the socket. So basically forward it to the </span>
+<span class="sd">        handler(s)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">packet</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">MTU</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">handler</span><span class="p">:</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">packet_received</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ScapyIO.send"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.scapy_io.ScapyIO.send">[docs]</a>    <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Send the given packet without any kind of test&quot;&quot;&quot;</span>
+        <span class="n">sendp</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="ScapyIO.stop_listening"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.scapy_io.ScapyIO.stop_listening">[docs]</a>    <span class="k">def</span> <span class="nf">stop_listening</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Just put the boolean to True. Then the reader</span>
+<span class="sd">        or the thread will have to notice it. Note that</span>
+<span class="sd">        it can take a while because with threads, the thread</span>
+<span class="sd">        is blocked in the recv method until a packet is received</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="c">#Send malformed packet to unblock thread in recv (if needed)</span>
+    </div>
+    <span class="k">def</span> <span class="nf">_reactor_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Callback function attached to the reader. All</span>
+<span class="sd">        the read to check if stop is activated or not. If</span>
+<span class="sd">        it is stop himself otherwise reschedule the callback</span>
+<span class="sd">        in 1 second.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">:</span>
+            <span class="n">reactor</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">reactor</span><span class="o">.</span><span class="n">callLater</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reactor_callback</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../../../index.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/framework.html">Framework Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/example.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/devel.html">PyStack development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/compliance.html">IP Stack compliance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/troubleshoot.html">Troubleshooting</a></li>
+</ul>
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../../index.html">PyStack 1 documentation</a> &raquo;</li>
+
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2013, Robin David.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

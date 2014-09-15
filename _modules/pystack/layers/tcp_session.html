@@ -1,0 +1,758 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pystack.layers.tcp_session &mdash; PyStack 1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../../../_static/cloud.js"></script>
+    <link rel="top" title="PyStack 1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../../index.html">PyStack 1 documentation</a> &raquo;</li>
+
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pystack.layers.tcp_session</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Author: Robin David</span>
+<span class="sd">License: GNU GPLv3</span>
+<span class="sd">Repo: https://github.com/RobinDavid</span>
+
+<span class="sd">Copyright (c) 2012 Robin David</span>
+
+<span class="sd">PyStack is free software: you can redistribute it and/or modify</span>
+<span class="sd">it under the terms of the GNU General Public License as published by</span>
+<span class="sd">the Free Software Foundation, either version 3 of the License, or </span>
+<span class="sd">any later version http://www.gnu.org/licenses/. </span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">random</span>
+
+<span class="kn">from</span> <span class="nn">scapy.all</span> <span class="kn">import</span> <span class="n">get_if_addr</span>
+
+<span class="kn">from</span> <span class="nn">layer</span> <span class="kn">import</span> <span class="n">Layer</span>
+<span class="kn">from</span> <span class="nn">kernel_filter</span> <span class="kn">import</span> <span class="n">block_outgoing_packets</span><span class="p">,</span> <span class="n">unblock_outgoing_packets</span>
+<span class="kn">from</span> <span class="nn">tcp_application</span> <span class="kn">import</span> <span class="n">TCPApplication</span>
+<span class="kn">import</span> <span class="nn">transversal_layer_access</span>
+
+<span class="n">CWR</span> <span class="o">=</span> <span class="mi">128</span>
+<span class="n">ECE</span> <span class="o">=</span> <span class="mi">64</span>
+<span class="n">URG</span> <span class="o">=</span> <span class="mi">32</span>
+<span class="n">ACK</span> <span class="o">=</span> <span class="mi">16</span>
+<span class="n">PSH</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">RST</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">SYN</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">FIN</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">FINACK = 17</span>
+<span class="sd">SYNACK = 18</span>
+<span class="sd">PSHACK = 24</span>
+<span class="sd">RSTACK = 20</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="k">def</span> <span class="nf">_has_flags</span><span class="p">(</span><span class="n">packet_flags</span><span class="p">,</span> <span class="n">flags</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check the existence of a flag using the decimal value&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">packet_flags</span> <span class="o">&amp;</span> <span class="n">flags</span> <span class="o">==</span> <span class="n">flags</span>
+
+<span class="k">def</span> <span class="nf">_has_only_flags</span><span class="p">(</span><span class="n">packet_flags</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">excluded_flags</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Generic method to check if a flag is activated using the decimal value&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">packet_flags</span> <span class="o">&amp;</span> <span class="n">flags</span> <span class="o">==</span> <span class="n">flags</span> <span class="ow">and</span> <span class="n">packet_flags</span> <span class="o">&amp;</span> <span class="n">excluded_flags</span> <span class="o">==</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="TCPSession"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.TCPSession">[docs]</a><span class="k">class</span> <span class="nc">TCPSession</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    TCPSession contains the core methods to deal with a lot of cases that can</span>
+<span class="sd">    be met with TCP. This class mainly implement methods to connect, bind and close</span>
+<span class="sd">    a TCP session with a remote host. At every moment a TCP session have a standardised</span>
+<span class="sd">    state from CLOSED, ESTABLISHED, ..</span>
+<span class="sd">    This class also keeps at every moment all the variables needed in order to process</span>
+<span class="sd">    TCP packets like sequence number, acknowledgement number, port ..</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Init initialise all the variable either if there are not used (e.g: </span>
+<span class="sd">        server variable when used as a client). Note: The default state is Closed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Layer</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;TCP&quot;</span> <span class="c">#Should stay here ! (otherwise will override real tcp layer in transversal_layer_access)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ipregex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">&quot;^(\d{1,3}.){3}.\d{1,3}$&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">State_CLOSED</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span> <span class="o">=</span> <span class="n">interface</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">localIP</span> <span class="o">=</span> <span class="n">get_if_addr</span><span class="p">(</span><span class="n">interface</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">localPort</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remoteIP</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remotePort</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connectionID</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="c">#--Server related variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connections</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c">#Used when server to know how many clients are connected ..</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nbconntoaccept</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">currentconnection</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">newinstance</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c">#When client connect either we send him on the same application or create a new instance</span>
+        <span class="c">#----</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seqNo</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ackNo</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">toAck</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nextAck</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastPacket</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">local_mss</span> <span class="o">=</span> <span class="mi">1460</span> <span class="c">#TODO: change it to be dynamic (RFC 879 default value is 536</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remote_mss</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">syn_retries</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s">&quot;/proc/sys/net/ipv4/tcp_syn_retries&quot;</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+        
+<div class="viewcode-block" id="TCPSession.packet_received"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.TCPSession.packet_received">[docs]</a>    <span class="k">def</span> <span class="nf">packet_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The more important thing with this method is that for each packet</span>
+<span class="sd">        this method can be called twice. The first time by the lower layer and the</span>
+<span class="sd">        packet is TCP. Then the packet is processed and packet_received is possibly</span>
+<span class="sd">        called once again with the packet decapsulated (in Raw). When a TCP packet</span>
+<span class="sd">        is received seq and ack value are updated when the packet_received method</span>
+<span class="sd">        of the current state of the connection is called to know what to do with </span>
+<span class="sd">        the current packet.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">packet</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s">&quot;TCP&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">upperLayers</span><span class="p">[</span><span class="s">&quot;Raw&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">hook_incoming</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="c">#Assume upperlayer is a tcp application</span>
+            <span class="c">#print self.state, packet.flags, packet.summary()</span>
+            <span class="k">if</span> <span class="n">packet</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">lastPacket</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s">&quot;Drop duplicate&quot;</span><span class="p">)</span>
+                <span class="k">return</span>
+            
+            <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">            self.seqNo = packet.ack</span>
+<span class="sd">            self.ackNo = packet.seq</span>
+<span class="sd">            </span>
+<span class="sd">            if packet.payload:</span>
+<span class="sd">                self.toAck += len(packet.payload.load)</span>
+<span class="sd">            &#39;&#39;&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">seqNo</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">ack</span>
+            <span class="c">#self.nextAck = self.seqNo ?</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ackNo</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">seq</span>
+            
+            <span class="k">if</span> <span class="n">packet</span><span class="o">.</span><span class="n">haslayer</span><span class="p">(</span><span class="s">&quot;Padding&quot;</span><span class="p">):</span> <span class="c">#Remove any padding if present to donot interfer with ack</span>
+                <span class="n">packet</span><span class="p">[</span><span class="s">&quot;Padding&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="k">if</span> <span class="n">packet</span><span class="o">.</span><span class="n">payload</span><span class="p">:</span> <span class="c">#Already prepare the next acknowledgement number</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ackNo</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="n">payload</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">packet</span><span class="o">.</span><span class="n">flags</span> <span class="o">!=</span> <span class="n">ACK</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ackNo</span> <span class="o">+=</span> <span class="mi">1</span>  <span class="c">#Acknowledge everything which is not a pure ack</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nextAck</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nextAck</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">seqNo</span><span class="p">:</span>
+                    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Host didn&#39;t acknowledge all datas Expected:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nextAck</span><span class="p">,</span> <span class="s">&quot;(&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seqNo</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;)&quot;</span><span class="p">)</span>
+                    <span class="c">#Resend hoping the remote host will acknowledge all the packet??</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lastPacket</span> <span class="o">=</span> <span class="n">packet</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_process_options</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">packet_received</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            
+        <span class="k">elif</span> <span class="n">packet</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s">&quot;Raw&quot;</span><span class="p">:</span>  <span class="c">#Put back else afterward</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperLayers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperLayers</span><span class="p">[</span><span class="s">&quot;default&quot;</span><span class="p">])</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connectionID</span>
+            <span class="n">target</span><span class="o">.</span><span class="n">packet_received</span><span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="n">load</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> 
+            </div>
+<div class="viewcode-block" id="TCPSession.connect"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.TCPSession.connect">[docs]</a>    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>  <span class="c">#Ajouter support du dns</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method try to connect to the given ip and port. If the</span>
+<span class="sd">        TCP session is not CLOSED the operations are aborted. Else a local</span>
+<span class="sd">        port is generated, an entry is added in iptables to preven the kernel</span>
+<span class="sd">        to disturbe our connection and then a SYN packet is sent. Then the</span>
+<span class="sd">        connection state is switched to SYN_SENT. The method will then loop</span>
+<span class="sd">        for 20 seconds checking if the state has changed to ESTABLISHED. If </span>
+<span class="sd">        not it means that a problem occured and everything is rolled back.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">State_CLOSED</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">localPort</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randrange</span><span class="p">(</span><span class="mi">1200</span><span class="p">,</span> <span class="mi">65535</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">remoteIP</span> <span class="o">=</span> <span class="n">ip</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">remotePort</span> <span class="o">=</span> <span class="n">port</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ipregex</span><span class="p">,</span> <span class="n">ip</span><span class="p">):</span> <span class="c">#Then this is a dn</span>
+                <span class="n">realip</span> <span class="o">=</span> <span class="n">transversal_layer_access</span><span class="p">[</span><span class="s">&quot;DNS&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">nslookup</span><span class="p">(</span><span class="n">ip</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">realip</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">remoteIP</span> <span class="o">=</span> <span class="n">realip</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;[Errno -5] No address associated with hostname&quot;</span><span class="p">)</span>
+            
+            <span class="c">#starting from here remoteIP contains the destination IP not DN or whatever</span>
+            <span class="n">block_outgoing_packets</span><span class="p">(</span><span class="s">&#39;tcp&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">remoteIP</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connectionID</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remoteIP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">remotePort</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">localIP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">localPort</span><span class="p">)</span>  <span class="c">#Switch order because we are interested in receiving incoming packet so src dst is switch</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lowerLayers</span><span class="p">[</span><span class="s">&quot;default&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">register_upper_layer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connectionID</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_send_SYN</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">switch_state</span><span class="p">(</span><span class="n">State_SYN_SENT</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+            <span class="c">#---- Wait for the connection to be established ----</span>
+            
+            <span class="n">exponential_backoff_values</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="nb">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">syn_retries</span><span class="p">)]</span>  <span class="c">#Precompute waiting intervals</span>
+            <span class="k">for</span> <span class="n">timeout</span> <span class="ow">in</span> <span class="n">exponential_backoff_values</span><span class="p">:</span>
+                <span class="n">instant</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+                <span class="k">while</span> <span class="p">(</span><span class="n">instant</span> <span class="o">+</span> <span class="n">timeout</span> <span class="o">&gt;</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()):</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">State_ESTABLISHED</span><span class="p">):</span>
+                        <span class="k">return</span> <span class="bp">True</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_send_SYN</span><span class="p">()</span>
+            
+            <span class="c">#We have not received syn/ack so rollback connection</span>
+            <span class="n">unblock_outgoing_packets</span><span class="p">(</span><span class="s">&#39;tcp&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">remoteIP</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lowerLayers</span><span class="p">[</span><span class="s">&quot;default&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unregister_upper_layer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connectionID</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span> <span class="c">#No connection can occur if port is not open, arp request failed..</span>
+            <span class="c">#----------------------------------------------------</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;Not in consistent state (&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;)&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span>
+    </div>
+<div class="viewcode-block" id="TCPSession.bind"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.TCPSession.bind">[docs]</a>    <span class="k">def</span> <span class="nf">bind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">app</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">newinstance</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The bind method is quite ligthweight. It justs register</span>
+<span class="sd">        itself to the TCP protocol as a handler and an entry is added</span>
+<span class="sd">        to iptables to prevent the Hosting host to reply with RST.</span>
+<span class="sd">        Note app and newinstance define on which TCPApplication client</span>
+<span class="sd">        connections should be redirected and if the TCPApplication should</span>
+<span class="sd">        be forked for every client or not.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">app</span> <span class="k">if</span> <span class="n">app</span> <span class="k">else</span> <span class="n">TCPApplication</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">newinstance</span> <span class="o">=</span> <span class="n">newinstance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">localPort</span> <span class="o">=</span> <span class="n">port</span>
+        <span class="n">block_outgoing_packets</span><span class="p">(</span><span class="s">&quot;tcp&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">localIP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">localPort</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connectionID</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">localIP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">localPort</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lowerLayers</span><span class="p">[</span><span class="s">&#39;default&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">register_upper_layer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connectionID</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TCPSession.listen"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.TCPSession.listen">[docs]</a>    <span class="k">def</span> <span class="nf">listen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nb</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method basically just switch the current</span>
+<span class="sd">        state from CLOSED to LISTEN so that SYN request will</span>
+<span class="sd">        be handled.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">State_CLOSED</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nbconntoaccept</span> <span class="o">=</span> <span class="n">nb</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">switch_state</span><span class="p">(</span><span class="n">State_LISTEN</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;Not in consistent state (&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;)&quot;</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="TCPSession.accept"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.TCPSession.accept">[docs]</a>    <span class="k">def</span> <span class="nf">accept</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        From a server point of view every client connections are hold</span>
+<span class="sd">        in the connections attribute. When accept is called the method start</span>
+<span class="sd">        by flushing all CLOSED connections from the connections list. Then it</span>
+<span class="sd">        waiting for a connection to be appended to the list to return it. (when</span>
+<span class="sd">        the currentconnection value is changed)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#-- Remove closed connection located before the current &quot;cursor&quot; </span>
+        <span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">)</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currentconnection</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">State_CLOSED</span><span class="p">):</span>
+                <span class="n">indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connections</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">connections</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">currentconnection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">currentconnection</span> <span class="o">-</span> <span class="p">(</span><span class="n">size</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">))</span>
+        <span class="c">#---------------------------</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">currentconnection</span><span class="o">+</span><span class="mi">1</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">):</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">currentconnection</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">currentconnection</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">upperLayers</span><span class="p">[</span><span class="s">&quot;Raw&quot;</span><span class="p">]</span>  <span class="c">#Return de application level instead of the session</span>
+    </div>
+<div class="viewcode-block" id="TCPSession.close"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.TCPSession.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        For a client will send a FIN packet and switch to FIN_WAIT1.</span>
+<span class="sd">        For a server will send a FIN packet for every clients in order </span>
+<span class="sd">        to unregister itself from the TCP layer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">State_ESTABLISHED</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_send_FIN</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">switch_state</span><span class="p">(</span><span class="n">State_FIN_WAIT_1</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">State_LISTEN</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">session</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">State_ESTABLISHED</span><span class="p">):</span>
+                    <span class="n">session</span><span class="o">.</span><span class="n">_send_FIN</span><span class="p">()</span>
+                    <span class="n">session</span><span class="o">.</span><span class="n">switch_state</span><span class="p">(</span><span class="n">State_FIN_WAIT_1</span><span class="p">(</span><span class="n">session</span><span class="p">))</span>
+            <span class="n">unblock_outgoing_packets</span><span class="p">(</span><span class="s">&#39;tcp&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">localIP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">localPort</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unregister_upper_layer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connectionID</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_unregister_app_layer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connectionID</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;Not in consistent state to close&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TCPSession.unregister_upper_layer"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.TCPSession.unregister_upper_layer">[docs]</a>    <span class="k">def</span> <span class="nf">unregister_upper_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Used to remove himself from the lower layer&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lowerLayers</span><span class="p">[</span><span class="s">&quot;default&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unregister_upper_layer</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    </div>
+    <span class="k">def</span> <span class="nf">_unregister_app_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Used to remove himself from the upper layer&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperLayers</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&quot;Raw&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperLayers</span><span class="p">[</span><span class="s">&quot;Raw&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lowerLayers</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">upperLayers</span><span class="p">[</span><span class="s">&quot;Raw&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lowerLayers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+   
+<div class="viewcode-block" id="TCPSession.switch_state"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.TCPSession.switch_state">[docs]</a>    <span class="k">def</span> <span class="nf">switch_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Switch to the given state. State should</span>
+<span class="sd">        implement State</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">state</span>
+</div>
+    <span class="k">def</span> <span class="nf">_call_connection_made</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Called when the connection is made. It call</span>
+<span class="sd">        the connection_made from the application layer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upperLayers</span><span class="p">[</span><span class="s">&quot;Raw&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">connection_made</span><span class="p">()</span>  <span class="c">#Assume that the Raw upper layer is an TCP Application and so contains the so called method</span>
+    
+    <span class="k">def</span> <span class="nf">_process_options</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method deal with options present in TCP packets. It is</span>
+<span class="sd">        common for every state and is called before packet_received of</span>
+<span class="sd">        the state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">State_LISTEN</span><span class="p">):</span>  <span class="c">#Process options in every state but listen (rfc)</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">packet</span><span class="o">.</span><span class="n">options</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s">&quot;MSS&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">remote_mss</span> <span class="o">=</span> <span class="n">v</span>
+                <span class="k">elif</span> <span class="n">k</span> <span class="o">==</span> <span class="s">&quot;Timestamp&quot;</span><span class="p">:</span>
+                    <span class="k">pass</span><span class="c">#print &quot;Timestamp received&quot;, v</span>
+    
+<div class="viewcode-block" id="TCPSession.send_packet"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.TCPSession.send_packet">[docs]</a>    <span class="k">def</span> <span class="nf">send_packet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">ACK</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method is one of the most critical. Every TCP packet are sent</span>
+<span class="sd">        through this method. This method basically deal with all the flags and</span>
+<span class="sd">        is in charge to incremente sequence number. In addition it sets all the</span>
+<span class="sd">        TCP fields in order to generate the packet. It increment the ack value</span>
+<span class="sd">        of the data size of the previously received packet.  </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">fields</span><span class="p">[</span><span class="s">&quot;flags&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">flags</span>
+        
+        <span class="k">if</span> <span class="n">flags</span> <span class="o">==</span> <span class="n">SYN</span><span class="p">:</span>
+            <span class="n">fields</span><span class="p">[</span><span class="s">&quot;options&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&#39;MSS&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_mss</span><span class="p">)]</span>
+        
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        if packet_received:</span>
+<span class="sd">            if packet_received.payload.name == &quot;Raw&quot;:</span>
+<span class="sd">                data = packet_received.payload.load</span>
+<span class="sd">                self.ackNo += len(data)</span>
+<span class="sd">            else:</span>
+<span class="sd">                self.ackNo +=1</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        if self.toAck:</span>
+<span class="sd">            #TODO: Add the flag ACK if not activated (FIN..)</span>
+<span class="sd">            self.ackNo += self.toAck</span>
+<span class="sd">            self.toAck = 0</span>
+<span class="sd">        else:</span>
+<span class="sd">            if packet_received: #Ack +1 only if we previously received a packet</span>
+<span class="sd">                self.ackNo += 1</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c">#It is the same but in reverse nextAck should be data if existing +1 instead or +0 if pure ack</span>
+        <span class="k">if</span> <span class="n">packet</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nextAck</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">flags</span> <span class="o">!=</span> <span class="n">ACK</span><span class="p">:</span> <span class="c">#Excpect the remote host to ack every packet but pure Ack</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nextAck</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">fields</span><span class="p">[</span><span class="s">&quot;sport&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">localPort</span>
+        <span class="n">fields</span><span class="p">[</span><span class="s">&quot;dport&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remotePort</span>
+        <span class="n">fields</span><span class="p">[</span><span class="s">&quot;seq&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">seqNo</span>  <span class="c">#Cause we do no send data</span>
+        <span class="n">fields</span><span class="p">[</span><span class="s">&quot;ack&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ackNo</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&quot;IP&quot;</span><span class="p">):</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;IP&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;IP&#39;</span><span class="p">][</span><span class="s">&quot;src&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">localIP</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;IP&#39;</span><span class="p">][</span><span class="s">&quot;dst&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remoteIP</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">remoteIP</span> <span class="k">else</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;IP&quot;</span><span class="p">][</span><span class="s">&quot;src&quot;</span><span class="p">]</span>
+        
+        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&quot;TCP&quot;</span><span class="p">):</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;TCP&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;TCP&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fields</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_mss</span><span class="p">:</span>
+            <span class="n">mss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_mss</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_mss</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_mss</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_mss</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_mss</span>
+        <span class="k">if</span> <span class="n">packet</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">mss</span><span class="p">:</span>
+                <span class="n">fragments</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nsplit</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="n">mss</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">fragments</span><span class="p">)):</span>
+                    <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;TCP&#39;</span><span class="p">][</span><span class="s">&quot;seq&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;TCP&quot;</span><span class="p">][</span><span class="s">&quot;seq&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">fragments</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;TCP&quot;</span><span class="p">][</span><span class="s">&quot;seq&quot;</span><span class="p">]</span> <span class="c">#Do not addition length for the first packet</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">transfer_packet</span><span class="p">(</span><span class="n">fragments</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">transfer_packet</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transfer_packet</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="TCPSession.transfer_packet"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.TCPSession.transfer_packet">[docs]</a>    <span class="k">def</span> <span class="nf">transfer_packet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Override the layer transfer_packet just to add the hook.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">packet</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperLayers</span><span class="p">[</span><span class="s">&quot;Raw&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">hook_outgoing</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="c">#Assume the Raw application is a tcp_application</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lowerLayers</span><span class="p">[</span><span class="s">&quot;default&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">send_packet</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">_nsplit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span><span class="c">#Split a list into sublists of size &quot;n&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">load</span><span class="p">[</span><span class="n">k</span><span class="p">:</span><span class="n">k</span><span class="o">+</span><span class="n">n</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="n">n</span><span class="p">)]</span>
+
+    <span class="k">def</span> <span class="nf">_send_SYN</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate the sequence number set the ack number and</span>
+<span class="sd">        call send_packet with the appropriate flags</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">seqNo</span><span class="p">:</span>  <span class="c">#Avoid regenerating a sequence number when resending the syn packet on connect</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">seqNo</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="mi">32</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ackNo</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nextAck</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">seqNo</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_packet</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">SYN</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TCPSession.sendRST"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.TCPSession.sendRST">[docs]</a>    <span class="k">def</span> <span class="nf">sendRST</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Just send a reset packet to the remote host&quot;&quot;&quot;</span>
+        <span class="k">print</span> <span class="s">&quot;Send RST state:&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_packet</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">RST</span><span class="o">+</span><span class="n">ACK</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    </div>
+    <span class="k">def</span> <span class="nf">_send_SYNACK</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send a syn_ack packet. To do it, generate a sequence</span>
+<span class="sd">        number and call send_packet with the SYNACK flags</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seqNo</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="mi">32</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nextAck</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">seqNo</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_packet</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">SYN</span><span class="o">+</span><span class="n">ACK</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">_send_ACK</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">other</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Call send_packet with ACK flag activated&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_packet</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">ACK</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="TCPSession.send_data"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.TCPSession.send_data">[docs]</a>    <span class="k">def</span> <span class="nf">send_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="n">push</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Just call send_packet with datas. The nextAck indicator</span>
+<span class="sd">        is also updated to the excpected value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">seqNo</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nextAck</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">seqNo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nextAck</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_packet</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="n">PSH</span><span class="o">+</span><span class="n">ACK</span> <span class="k">if</span> <span class="n">push</span> <span class="k">else</span> <span class="n">ACK</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c">#For now push always true because no upper layer call directly send_data</span>
+            </div>
+    <span class="k">def</span> <span class="nf">_send_FIN</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Send a FIN packet&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nextAck</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_packet</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">FIN</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">_send_FINACK</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Send a FIN_ACK packet&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nextAck</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_packet</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">FIN</span><span class="o">+</span><span class="n">ACK</span><span class="p">)</span>
+    
+</div>
+<div class="viewcode-block" id="State"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.State">[docs]</a><span class="k">class</span> <span class="nc">State</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    State class is the mother class that describe</span>
+<span class="sd">    a state at a given moment. A state is just</span>
+<span class="sd">    characterised by a name and should implement a </span>
+<span class="sd">    method called packet_received that will provide </span>
+<span class="sd">    the adapted state behavior for every packets</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Init takes a session as class attribute to be</span>
+<span class="sd">        able to interact with it in a two way interaction</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">session</span>
+    
+<div class="viewcode-block" id="State.packet_received"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.State.packet_received">[docs]</a>    <span class="k">def</span> <span class="nf">packet_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        By default packet_received does nothing but</span>
+<span class="sd">        printing the packet</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">packet</span><span class="p">))</span>
+
+</div></div>
+<div class="viewcode-block" id="State_CLOSED"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.State_CLOSED">[docs]</a><span class="k">class</span> <span class="nc">State_CLOSED</span><span class="p">(</span><span class="n">State</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Any packets received on a Closed connection is</span>
+<span class="sd">    being replied with a reset packet</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="State_CLOSED.packet_received"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.State_CLOSED.packet_received">[docs]</a>    <span class="k">def</span> <span class="nf">packet_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">sendRST</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="State_LISTEN"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.State_LISTEN">[docs]</a><span class="k">class</span> <span class="nc">State_LISTEN</span><span class="p">(</span><span class="n">State</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A tcp session in Listen state only process SYN packet. When a SYN</span>
+<span class="sd">    packet is received it checks that the number of connection to accept is</span>
+<span class="sd">    not exceeded. If this is ok it creates another TCP session specific for</span>
+<span class="sd">    this connection. Then it attachs it a TCPApplication either by forking</span>
+<span class="sd">    it or not depending of the config. Then it switched the newly created</span>
+<span class="sd">    connection to SYN_SENT state.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="State_LISTEN.packet_received"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.State_LISTEN.packet_received">[docs]</a>    <span class="k">def</span> <span class="nf">packet_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">packet</span><span class="o">.</span><span class="n">flags</span> <span class="o">==</span> <span class="n">SYN</span><span class="p">:</span>  <span class="c">#Don&#39;t check if the dstport is the same because it has been check in tcp</span>
+            <span class="c">#--- Check we have not exceeded the number of connections</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">sess</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">connections</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sess</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">State_CLOSED</span><span class="p">):</span>
+                    <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">nbconntoaccept</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">sendRST</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="k">return</span>
+            <span class="c">#--------------------------------------------------</span>
+            <span class="n">session</span> <span class="o">=</span> <span class="n">TCPSession</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">interface</span><span class="p">)</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">seqNo</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">ack</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">ackNo</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">seq</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">localPort</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">dport</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">remoteIP</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;IP&quot;</span><span class="p">][</span><span class="s">&quot;src&quot;</span><span class="p">]</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">remotePort</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">sport</span>
+                             
+            <span class="n">block_outgoing_packets</span><span class="p">(</span><span class="s">&#39;tcp&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">remoteIP</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">remotePort</span><span class="p">)</span>
+            
+            <span class="n">connID</span> <span class="o">=</span> <span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">remoteIP</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">remotePort</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">localIP</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">localPort</span><span class="p">)</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">connectionID</span> <span class="o">=</span> <span class="n">connID</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">lowerLayers</span><span class="p">[</span><span class="s">&quot;default&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">register_layer_full</span><span class="p">(</span><span class="n">connID</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">newinstance</span><span class="p">:</span>
+                <span class="n">newapp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">app</span><span class="p">))</span>
+                <span class="n">newapp</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+                <span class="n">session</span><span class="o">.</span><span class="n">register_layer</span><span class="p">(</span><span class="n">newapp</span><span class="p">)</span>
+                <span class="n">session</span><span class="o">.</span><span class="n">upperLayers</span><span class="p">[</span><span class="s">&quot;Raw&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">hook_incoming</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="c">#Cause if a new instance is created the SYN packet is received by the socket server in listen, and not the application itself so call hook again here</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">session</span><span class="o">.</span><span class="n">register_upper_layer</span><span class="p">(</span><span class="s">&quot;Raw&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">app</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">register_lower_layer</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">connectionID</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span>
+                <span class="c">#session.register_layer_full(&quot;Raw&quot;, self.session.app)</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">_send_SYNACK</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">switch_state</span><span class="p">(</span><span class="n">State_SYN_RCVD</span><span class="p">(</span><span class="n">session</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">connections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">_has_flags</span><span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="n">flags</span><span class="p">,</span> <span class="n">RST</span><span class="p">):</span> <span class="c">#(TCP/IP illustrated Volume 2 p.999)</span>
+            <span class="k">pass</span>  <span class="c">#Ignore the packet</span>
+        <span class="k">elif</span> <span class="n">_has_flags</span><span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="n">flags</span><span class="p">,</span> <span class="n">ACK</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">sendRST</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>  <span class="c">#What should we do ?</span>
+
+</div></div>
+<div class="viewcode-block" id="State_SYN_SENT"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.State_SYN_SENT">[docs]</a><span class="k">class</span> <span class="nc">State_SYN_SENT</span><span class="p">(</span><span class="n">State</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    When in SYN_SENT only process SYN_ACK packets by replying</span>
+<span class="sd">    a ACK packet. It also switch the state to ESTABLISHED and call</span>
+<span class="sd">    the session _call_connection_made method</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="State_SYN_SENT.packet_received"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.State_SYN_SENT.packet_received">[docs]</a>    <span class="k">def</span> <span class="nf">packet_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">packet</span><span class="o">.</span><span class="n">flags</span> <span class="o">==</span> <span class="n">SYN</span><span class="o">+</span><span class="n">ACK</span><span class="p">:</span> <span class="c">#Logical or but result is SYN + ACK</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">_send_ACK</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">switch_state</span><span class="p">(</span><span class="n">State_ESTABLISHED</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">_call_connection_made</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">packet</span><span class="o">.</span><span class="n">flags</span> <span class="o">==</span> <span class="n">SYN</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Simultaneous open Arrrghhh !&quot;</span>
+        <span class="k">elif</span> <span class="n">_has_flags</span><span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="n">flags</span><span class="p">,</span> <span class="n">RST</span><span class="p">):</span> <span class="c">#(TCP/IP illustrated Volume 2 p.999)</span>
+            <span class="k">pass</span>  <span class="c">#Ignore the packet</span>
+        <span class="k">elif</span> <span class="n">_has_flags</span><span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="n">flags</span><span class="p">,</span> <span class="n">ACK</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">sendRST</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>  <span class="c">#What should we do ?</span>
+
+</div></div>
+<div class="viewcode-block" id="State_SYN_RCVD"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.State_SYN_RCVD">[docs]</a><span class="k">class</span> <span class="nc">State_SYN_RCVD</span><span class="p">(</span><span class="n">State</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    When in SYN_RCVD only process ACK packets. Then</span>
+<span class="sd">    switch the state to ESTABLISHED and call ConnectionMade</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="State_SYN_RCVD.packet_received"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.State_SYN_RCVD.packet_received">[docs]</a>    <span class="k">def</span> <span class="nf">packet_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">packet</span><span class="o">.</span><span class="n">flags</span> <span class="o">==</span> <span class="n">ACK</span><span class="p">:</span> <span class="c">#Ack</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">switch_state</span><span class="p">(</span><span class="n">State_ESTABLISHED</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">_call_connection_made</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">sendRST</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c">#Receive a FIN at this moment is legal (p.1052, TCP/IP Illustrated vol2)</span>
+</div></div>
+<div class="viewcode-block" id="State_ESTABLISHED"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.State_ESTABLISHED">[docs]</a><span class="k">class</span> <span class="nc">State_ESTABLISHED</span><span class="p">(</span><span class="n">State</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    When the session is in the established state it should</span>
+<span class="sd">    handle a lot&#39;s of different cases and react in consequences</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="State_ESTABLISHED.packet_received"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.State_ESTABLISHED.packet_received">[docs]</a>    <span class="k">def</span> <span class="nf">packet_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">_has_flags</span><span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="n">flags</span><span class="p">,</span> <span class="n">FIN</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">_send_FINACK</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
+            <span class="c">#Forward data to application layer ?</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">switch_state</span><span class="p">(</span><span class="n">State_LAST_ACK</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">_has_flags</span><span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="n">flags</span><span class="p">,</span> <span class="n">RST</span><span class="p">):</span>
+            <span class="k">pass</span> <span class="c">#What do we do with a reset flag ?</span>
+        <span class="k">elif</span> <span class="n">_has_flags</span><span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="n">flags</span><span class="p">,</span> <span class="n">ACK</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">packet</span><span class="o">.</span><span class="n">payload</span><span class="p">:</span> <span class="c">#Acknowledge if data has been sent</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">_send_ACK</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>  <span class="c">#No delayed ack implemented, and should reply before 200ms RFC1122</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">packet_received</span><span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="n">payload</span><span class="p">)</span>  <span class="c">#By default will transfer it to the upper layer (Raw)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">sendRST</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="State_FIN_WAIT_1"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.State_FIN_WAIT_1">[docs]</a><span class="k">class</span> <span class="nc">State_FIN_WAIT_1</span><span class="p">(</span><span class="n">State</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    When in FIN_WAIT expect a FIN and ACK packet. If</span>
+<span class="sd">    it received a FIN_ACK packet it sends a ACK switch to closed</span>
+<span class="sd">    and unregister itself from both the upper and the lower layer</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="State_FIN_WAIT_1.packet_received"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.State_FIN_WAIT_1.packet_received">[docs]</a>    <span class="k">def</span> <span class="nf">packet_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">packet</span><span class="o">.</span><span class="n">flags</span> <span class="o">==</span> <span class="n">FIN</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">switch_state</span><span class="p">(</span><span class="n">State_FIN_WAIT_2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">))</span>
+            <span class="c">#self.session.packet_received(packet.payload)  #Can there be data in a FIN packet ?</span>
+        <span class="k">elif</span> <span class="n">_has_flags</span><span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="n">flags</span><span class="p">,</span> <span class="n">FIN</span><span class="o">+</span><span class="n">ACK</span><span class="p">):</span>  <span class="c">#Received FIN and Ack in the same packet</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">_send_ACK</span><span class="p">()</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">switch_state</span><span class="p">(</span><span class="n">State_TIME_WAIT</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">))</span><span class="c">#??</span>
+            <span class="c">#Directly remove the session do not switch to closed</span>
+            <span class="n">unblock_outgoing_packets</span><span class="p">(</span><span class="s">&#39;tcp&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">remoteIP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">remotePort</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">unregister_upper_layer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">connectionID</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">_unregister_app_layer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">connectionID</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">switch_state</span><span class="p">(</span><span class="n">State_CLOSED</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">))</span>  <span class="c">#Will never received any packet because connection unregistered from tcp layer</span>
+            <span class="c">#self.session.packet_received(packet.payload)  #Can there be data in a FIN packet ?</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">packet</span><span class="o">.</span><span class="n">payload</span><span class="p">:</span> <span class="c">#Acknowledge if data has been sent</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">_send_ACK</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>  <span class="c">#No delayed ack implemented, and should reply before 200ms RFC1122</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">packet_received</span><span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="n">payload</span><span class="p">)</span>  <span class="c">#Still forward data in case of ACK..</span>
+</div></div>
+<div class="viewcode-block" id="State_CLOSE_WAIT"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.State_CLOSE_WAIT">[docs]</a><span class="k">class</span> <span class="nc">State_CLOSE_WAIT</span><span class="p">(</span><span class="n">State</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This state is not implemented in the stack. The</span>
+<span class="sd">    stack always send both FIN and ACK in the same packet</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="State_CLOSE_WAIT.packet_received"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.State_CLOSE_WAIT.packet_received">[docs]</a>    <span class="k">def</span> <span class="nf">packet_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+</div></div>
+<div class="viewcode-block" id="State_FIN_WAIT_2"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.State_FIN_WAIT_2">[docs]</a><span class="k">class</span> <span class="nc">State_FIN_WAIT_2</span><span class="p">(</span><span class="n">State</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    In FIN_WAIT2 if the host send a FIN to session can be ended up</span>
+<span class="sd">    sucessfully.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="State_FIN_WAIT_2.packet_received"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.State_FIN_WAIT_2.packet_received">[docs]</a>    <span class="k">def</span> <span class="nf">packet_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">packet</span><span class="o">.</span><span class="n">flags</span> <span class="o">==</span> <span class="n">FIN</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">switch_state</span><span class="p">(</span><span class="n">State_TIME_WAIT</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">))</span> <span class="c">#??</span>
+            <span class="c">#Directly remove the session do not switch to closed</span>
+            <span class="n">unblock_outgoing_packets</span><span class="p">(</span><span class="s">&#39;tcp&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">remoteIP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">remotePort</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">unregister_upper_layer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">connectionID</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">_unregister_app_layer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">connectionID</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">_send_ACK</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">switch_state</span><span class="p">(</span><span class="n">State_CLOSED</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">sendRST</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="State_LAST_ACK"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.State_LAST_ACK">[docs]</a><span class="k">class</span> <span class="nc">State_LAST_ACK</span><span class="p">(</span><span class="n">State</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;When in Last_ACK just wait for the final ack to close the connection&quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="State_LAST_ACK.packet_received"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.State_LAST_ACK.packet_received">[docs]</a>    <span class="k">def</span> <span class="nf">packet_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">packet</span><span class="o">.</span><span class="n">flags</span> <span class="o">==</span> <span class="n">ACK</span><span class="p">:</span>
+            <span class="c">#directly remove do not put to closed</span>
+            <span class="n">unblock_outgoing_packets</span><span class="p">(</span><span class="s">&#39;tcp&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">remoteIP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">remotePort</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">unregister_upper_layer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">connectionID</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">_unregister_app_layer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">connectionID</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">switch_state</span><span class="p">(</span><span class="n">State_CLOSED</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;would have sent a reset&quot;</span>
+            <span class="c">#self.session.sendRST(packet)</span>
+
+</div></div>
+<div class="viewcode-block" id="State_TIME_WAIT"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.tcp_session.State_TIME_WAIT">[docs]</a><span class="k">class</span> <span class="nc">State_TIME_WAIT</span><span class="p">(</span><span class="n">State</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Not implemented state directly deleted (normally put to closed for few sec)&quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../../../index.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/framework.html">Framework Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/example.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/devel.html">PyStack development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/compliance.html">IP Stack compliance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/troubleshoot.html">Troubleshooting</a></li>
+</ul>
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../../index.html">PyStack 1 documentation</a> &raquo;</li>
+
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2013, Robin David.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

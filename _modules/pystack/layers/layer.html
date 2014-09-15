@@ -1,0 +1,243 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pystack.layers.layer &mdash; PyStack 1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../../../_static/cloud.js"></script>
+    <link rel="top" title="PyStack 1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../../index.html">PyStack 1 documentation</a> &raquo;</li>
+
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pystack.layers.layer</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Author: Robin David</span>
+<span class="sd">License: GNU GPLv3</span>
+<span class="sd">Repo: https://github.com/RobinDavid</span>
+
+<span class="sd">Copyright (c) 2012 Robin David</span>
+
+<span class="sd">PyStack is free software: you can redistribute it and/or modify</span>
+<span class="sd">it under the terms of the GNU General Public License as published by</span>
+<span class="sd">the Free Software Foundation, either version 3 of the License, or </span>
+<span class="sd">any later version http://www.gnu.org/licenses/. </span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="k">try</span> <span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">transversal_layer_access</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">sys</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s">&quot;transversal_layer_access&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span> <span class="c">#With this trick only Raw entry is not consistent</span>
+    <span class="kn">import</span> <span class="nn">transversal_layer_access</span>
+
+<div class="viewcode-block" id="Layer"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.layer.Layer">[docs]</a><span class="k">class</span> <span class="nc">Layer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Mother class for all the layers(protocols) of the stack.</span>
+<span class="sd">    It provides many methods to register an upper or lower layer.</span>
+<span class="sd">    Moreover it provides methods that should be overriden by</span>
+<span class="sd">    children layers according to theirs behavior.</span>
+<span class="sd">    By the way Layer is an &quot;abstract&quot; class it should not be instanciated</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Init register a Default instance as default upperLayer for</span>
+<span class="sd">        unknown packets (but does nothing)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lowerLayers</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upperLayers</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_upper_layer</span><span class="p">(</span><span class="s">&quot;default&quot;</span><span class="p">,</span> <span class="n">Default</span><span class="p">())</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s">&quot;Raw&quot;</span><span class="p">:</span> <span class="c">#Trick to do not register all tcp session, application even though they extends Layer(and we stay generic)</span>
+            <span class="n">transversal_layer_access</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span> <span class="c">#Used to allow every layer access each other</span>
+        
+<div class="viewcode-block" id="Layer.register_upper_layer"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.layer.Layer.register_upper_layer">[docs]</a>    <span class="k">def</span> <span class="nf">register_upper_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">layer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add the given layer into the upperlayers dict</span>
+<span class="sd">        using the given name as key</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upperLayers</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">layer</span>
+        </div>
+<div class="viewcode-block" id="Layer.register_lower_layer"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.layer.Layer.register_lower_layer">[docs]</a>    <span class="k">def</span> <span class="nf">register_lower_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">layer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Register the given layer in the lowerlayers dict</span>
+<span class="sd">        using the given name as key</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lowerLayers</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">layer</span>
+    </div>
+<div class="viewcode-block" id="Layer.register_layer_full"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.layer.Layer.register_layer_full">[docs]</a>    <span class="k">def</span> <span class="nf">register_layer_full</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">layer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Shortcut method to register the given layer as upperlayer</span>
+<span class="sd">        and register self as the default lowerlayer for layer.</span>
+<span class="sd">        This can not be used in all cases</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_upper_layer</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">layer</span><span class="p">)</span>
+        <span class="n">layer</span><span class="o">.</span><span class="n">register_lower_layer</span><span class="p">(</span><span class="s">&quot;default&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="Layer.register_layer"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.layer.Layer.register_layer">[docs]</a>    <span class="k">def</span> <span class="nf">register_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Shortcut for register_layer_full using the layer.name as key&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_layer_full</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">layer</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="Layer.unregister_upper_layer"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.layer.Layer.unregister_upper_layer">[docs]</a>    <span class="k">def</span> <span class="nf">unregister_upper_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove the the layer referenced by the name in upperlayer.</span>
+<span class="sd">        The exception is catched to prevent to make the program crash</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">upperLayers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;Cannot delete, &quot;</span><span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+    </div>
+<div class="viewcode-block" id="Layer.transfer_packet"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.layer.Layer.transfer_packet">[docs]</a>    <span class="k">def</span> <span class="nf">transfer_packet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Define the default behavior when a packet should be transfered to the lower layer.</span>
+<span class="sd">        The default behavior is to call the send_packet of the default lowerlayer. This method</span>
+<span class="sd">        can be overriden by child layers</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lowerLayers</span><span class="p">[</span><span class="s">&quot;default&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">send_packet</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="Layer.packet_received"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.layer.Layer.packet_received">[docs]</a>    <span class="k">def</span> <span class="nf">packet_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Define the default behavior when a packet is received. By default decapsulate the packet</span>
+<span class="sd">        and send the payload to the upperlayer referenced by the payload name (TCP, IP ..)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperLayers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperLayers</span><span class="p">[</span><span class="s">&quot;default&quot;</span><span class="p">])</span>  <span class="c">#Get the handler name, default instead</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="n">packet</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">fields</span>
+        <span class="n">target</span><span class="o">.</span><span class="n">packet_received</span><span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="n">payload</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c">#Call packet_received of the handler with the payload</span>
+    </div>
+<div class="viewcode-block" id="Layer.send_packet"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.layer.Layer.send_packet">[docs]</a>    <span class="k">def</span> <span class="nf">send_packet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        By default when calling send_packet it forge the packet calling</span>
+<span class="sd">        forge_packet and forward it to the lower layer calling transfer_packet</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transfer_packet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">forge_packet</span><span class="p">(</span><span class="n">packet</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="Layer.forge_packet"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.layer.Layer.forge_packet">[docs]</a>    <span class="k">def</span> <span class="nf">forge_packet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;By default does nothing but should be overriden by child class&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+</div></div>
+<div class="viewcode-block" id="Default"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.layer.Default">[docs]</a><span class="k">class</span> <span class="nc">Default</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Default implements Layer. It just override packet_received</span>
+<span class="sd">    to do nothing. Class called when there is not handler for the packet</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Does nothing&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+    
+<div class="viewcode-block" id="Default.packet_received"><a class="viewcode-back" href="../../../api/pystack.layers.html#pystack.layers.layer.Default.packet_received">[docs]</a>    <span class="k">def</span> <span class="nf">packet_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Does nothing. Is called for every packet that does not have any handler&quot;&quot;&quot;</span>
+        <span class="k">pass</span>  <span class="c">#print(&quot;Unsupported: &quot;,packet.payload.name, repr(packet))</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../../../index.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/framework.html">Framework Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/example.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/devel.html">PyStack development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/compliance.html">IP Stack compliance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../text/troubleshoot.html">Troubleshooting</a></li>
+</ul>
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../../index.html">PyStack 1 documentation</a> &raquo;</li>
+
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2013, Robin David.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

@@ -1,0 +1,222 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pystack.kernel_filter &mdash; PyStack 1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../../_static/cloud.js"></script>
+    <link rel="top" title="PyStack 1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../index.html">PyStack 1 documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pystack.kernel_filter</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Author: Robin David</span>
+<span class="sd">License: GNU GPLv3</span>
+<span class="sd">Repo: https://github.com/RobinDavid</span>
+
+<span class="sd">Copyright (c) 2012 Robin David</span>
+
+<span class="sd">PyStack is free software: you can redistribute it and/or modify</span>
+<span class="sd">it under the terms of the GNU General Public License as published by</span>
+<span class="sd">the Free Software Foundation, either version 3 of the License, or </span>
+<span class="sd">any later version http://www.gnu.org/licenses/. </span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">from</span> <span class="nn">netfilter.rule</span> <span class="kn">import</span> <span class="n">Rule</span><span class="p">,</span> <span class="n">Match</span>
+<span class="kn">from</span> <span class="nn">netfilter.table</span> <span class="kn">import</span> <span class="n">Table</span><span class="p">,</span> <span class="n">IptablesError</span>
+
+
+<div class="viewcode-block" id="block_outgoing_packets"><a class="viewcode-back" href="../../api/pystack.html#pystack.kernel_filter.block_outgoing_packets">[docs]</a><span class="k">def</span> <span class="nf">block_outgoing_packets</span><span class="p">(</span><span class="n">proto</span><span class="p">,</span> <span class="n">ipsrc</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">portsrc</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ipdst</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">portdst</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Blocks outgoing packets coming from the kernel using iptables command.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">matches</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">portsrc</span><span class="p">:</span>
+        <span class="n">matches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Match</span><span class="p">(</span><span class="s">&#39;tcp&#39;</span><span class="p">,</span> <span class="s">&#39;--sport &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">portsrc</span><span class="p">)))</span>
+    <span class="k">if</span> <span class="n">portdst</span><span class="p">:</span>
+        <span class="n">matches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Match</span><span class="p">(</span><span class="s">&#39;tcp&#39;</span><span class="p">,</span> <span class="s">&#39;--dport &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">portdst</span><span class="p">)))</span>
+    <span class="n">rule</span> <span class="o">=</span> <span class="n">Rule</span><span class="p">(</span>
+                <span class="c">#in_interface=interface,</span>
+                <span class="n">protocol</span><span class="o">=</span><span class="n">proto</span><span class="p">,</span>
+                <span class="n">source</span> <span class="o">=</span> <span class="n">ipsrc</span><span class="p">,</span>
+                <span class="n">destination</span> <span class="o">=</span> <span class="n">ipdst</span><span class="p">,</span>
+                <span class="n">matches</span><span class="o">=</span><span class="n">matches</span><span class="p">,</span>
+                <span class="n">jump</span><span class="o">=</span><span class="s">&#39;DROP&#39;</span><span class="p">)</span>
+
+    <span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s">&#39;filter&#39;</span><span class="p">)</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">append_rule</span><span class="p">(</span><span class="s">&#39;OUTPUT&#39;</span><span class="p">,</span> <span class="n">rule</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="unblock_outgoing_packets"><a class="viewcode-back" href="../../api/pystack.html#pystack.kernel_filter.unblock_outgoing_packets">[docs]</a><span class="k">def</span> <span class="nf">unblock_outgoing_packets</span><span class="p">(</span><span class="n">proto</span><span class="p">,</span> <span class="n">ipsrc</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">portsrc</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ipdst</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">portdst</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Unblocks outgoing packets coming from the kernel using iptables command.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">matches</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">portsrc</span><span class="p">:</span>
+        <span class="n">matches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Match</span><span class="p">(</span><span class="s">&#39;tcp&#39;</span><span class="p">,</span> <span class="s">&#39;--sport &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">portsrc</span><span class="p">)))</span>
+    <span class="k">if</span> <span class="n">portdst</span><span class="p">:</span>
+        <span class="n">matches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Match</span><span class="p">(</span><span class="s">&#39;tcp&#39;</span><span class="p">,</span> <span class="s">&#39;--dport &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">portdst</span><span class="p">)))</span>
+    <span class="n">rule</span> <span class="o">=</span> <span class="n">Rule</span><span class="p">(</span>
+                <span class="c">#in_interface=interface,</span>
+                <span class="n">protocol</span><span class="o">=</span><span class="n">proto</span><span class="p">,</span>
+                <span class="n">source</span> <span class="o">=</span> <span class="n">ipsrc</span><span class="p">,</span>
+                <span class="n">destination</span> <span class="o">=</span> <span class="n">ipdst</span><span class="p">,</span>
+                <span class="n">matches</span><span class="o">=</span><span class="n">matches</span><span class="p">,</span>
+                <span class="n">jump</span><span class="o">=</span><span class="s">&#39;DROP&#39;</span><span class="p">)</span>
+
+    <span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s">&#39;filter&#39;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">delete_rule</span><span class="p">(</span><span class="s">&#39;OUTPUT&#39;</span><span class="p">,</span> <span class="n">rule</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">IptablesError</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;Unknown rule !&quot;</span><span class="p">,</span> <span class="n">proto</span><span class="p">,</span> <span class="n">ipsrc</span><span class="p">,</span> <span class="n">portsrc</span><span class="p">,</span> <span class="n">ipdst</span><span class="p">,</span> <span class="n">portdst</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="block_icmp_port_unreachable"><a class="viewcode-back" href="../../api/pystack.html#pystack.kernel_filter.block_icmp_port_unreachable">[docs]</a><span class="k">def</span> <span class="nf">block_icmp_port_unreachable</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Blocks ICMP port unreachable packets sent by the kernel when a UDP port is hit without any service listening.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">match</span> <span class="o">=</span>  <span class="n">Match</span><span class="p">(</span><span class="s">&#39;icmp&#39;</span><span class="p">,</span> <span class="s">&#39;--icmp-type port-unreachable&#39;</span><span class="p">)</span>
+    <span class="n">rule</span> <span class="o">=</span> <span class="n">Rule</span><span class="p">(</span><span class="n">protocol</span><span class="o">=</span><span class="s">&quot;icmp&quot;</span><span class="p">,</span> <span class="n">matches</span><span class="o">=</span><span class="p">[</span><span class="n">match</span><span class="p">],</span> <span class="n">jump</span><span class="o">=</span><span class="s">&#39;DROP&#39;</span><span class="p">)</span>
+    <span class="n">Table</span><span class="p">(</span><span class="s">&#39;filter&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">append_rule</span><span class="p">(</span><span class="s">&#39;OUTPUT&#39;</span><span class="p">,</span> <span class="n">rule</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="unblock_icmp_port_unreachable"><a class="viewcode-back" href="../../api/pystack.html#pystack.kernel_filter.unblock_icmp_port_unreachable">[docs]</a><span class="k">def</span> <span class="nf">unblock_icmp_port_unreachable</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Remove the rule that blocks ICMP port unreachable.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">match</span> <span class="o">=</span>  <span class="n">Match</span><span class="p">(</span><span class="s">&#39;icmp&#39;</span><span class="p">,</span> <span class="s">&#39;--icmp-type port-unreachable&#39;</span><span class="p">)</span>
+    <span class="n">rule</span> <span class="o">=</span> <span class="n">Rule</span><span class="p">(</span><span class="n">protocol</span><span class="o">=</span><span class="s">&quot;icmp&quot;</span><span class="p">,</span> <span class="n">matches</span><span class="o">=</span><span class="p">[</span><span class="n">match</span><span class="p">],</span> <span class="n">jump</span><span class="o">=</span><span class="s">&#39;DROP&#39;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">Table</span><span class="p">(</span><span class="s">&#39;filter&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">delete_rule</span><span class="p">(</span><span class="s">&#39;OUTPUT&#39;</span><span class="p">,</span> <span class="n">rule</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">IptablesError</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;Try to remove unexisting icmp port-unreachable&quot;</span><span class="p">)</span>
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Other possible thing doable with netfilter module:</span>
+<span class="sd">from netfilter.parser import parse_rule</span>
+<span class="sd">table, rule = parse_rule(&quot;-A OUTPUT -p TCP -j DROP&quot;)</span>
+
+
+<span class="sd">from netfilter import table</span>
+<span class="sd">t = table.Table(&quot;filter&quot;)</span>
+<span class="sd">t.list_chains() -&gt; [&#39;INPUT&#39;, &#39;FORWARD&#39;, &#39;OUTPUT&#39;]</span>
+<span class="sd">t.list_rules(&quot;OUTPUT&quot;) -&gt; #list of netfilter rules</span>
+
+<span class="sd">Table -&gt; filter</span>
+<span class="sd">Chain -&gt; Chain OUTPUT (policy ACCEPT)</span>
+<span class="sd">         target     prot opt source               destination         </span>
+<span class="sd">Rule -&gt;  DROP       tcp  --  anywhere             linux-test1.local&#39;&#39;&#39;</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../../index.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../text/intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../text/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../text/framework.html">Framework Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../text/usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../text/example.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../text/devel.html">PyStack development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../text/compliance.html">IP Stack compliance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../text/troubleshoot.html">Troubleshooting</a></li>
+</ul>
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../index.html">PyStack 1 documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2013, Robin David.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>
