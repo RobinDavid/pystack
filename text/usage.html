@@ -11,8 +11,8 @@
     
     <title>Usage &mdash; PyStack 1 documentation</title>
     
-    <link rel="stylesheet" href="../_static/cloud.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
     
     <script type="text/javascript">
@@ -24,11 +24,11 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
-    <script type="text/javascript" src="../_static/cloud.js"></script>
+    <script type="text/javascript" src="../static/jquery.js"></script>
+    <script type="text/javascript" src="../static/underscore.js"></script>
+    <script type="text/javascript" src="../static/doctools.js"></script>
+    <script type="text/javascript" src="../static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../static/cloud.js"></script>
     <link rel="top" title="PyStack 1 documentation" href="../index.html" />
     <link rel="next" title="Examples" href="example.html" />
     <link rel="prev" title="Framework Architecture" href="framework.html" /> 
@@ -168,7 +168,7 @@ program create a TCP client which connnect to a web server. What is sent is not 
 
 <p>The following schema summarize all the parameters combinations and the effect it produce when a client connect.
 We consider in this schema <cite>conn = TCPApplication()</cite>, and conn is the application that will be bind.</p>
-<img alt="../_images/bind.jpg" class="align-center" src="../_images/bind.jpg" />
+<img alt="../images/bind.jpg" class="align-center" src="../images/bind.jpg" />
 <p>In the end to make a server the code is similar to client. The only thing to modify is to change <cite>conn.connect(&#8220;myserver.com&#8221;, 80)</cite> by:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">conn</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="mi">8888</span><span class="p">)</span> <span class="c">#Without argument the TCPApplication use for new client is conn and the application is not forked</span>
 <span class="n">conn</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>

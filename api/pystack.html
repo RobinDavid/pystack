@@ -11,8 +11,8 @@
     
     <title>pystack Package &mdash; PyStack 1 documentation</title>
     
-    <link rel="stylesheet" href="../_static/cloud.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
     
     <script type="text/javascript">
@@ -24,11 +24,11 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
-    <script type="text/javascript" src="../_static/cloud.js"></script>
+    <script type="text/javascript" src="../static/jquery.js"></script>
+    <script type="text/javascript" src="../static/underscore.js"></script>
+    <script type="text/javascript" src="../static/doctools.js"></script>
+    <script type="text/javascript" src="../static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../static/cloud.js"></script>
     <link rel="top" title="PyStack 1 documentation" href="../index.html" /> 
         <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
@@ -81,25 +81,25 @@ the Free Software Foundation, either version 3 of the License, or
 any later version <a class="reference external" href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p>
 <dl class="function">
 <dt id="pystack.kernel_filter.block_icmp_port_unreachable">
-<tt class="descclassname">pystack.kernel_filter.</tt><tt class="descname">block_icmp_port_unreachable</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pystack/kernel_filter.html#block_icmp_port_unreachable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.kernel_filter.block_icmp_port_unreachable" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pystack.kernel_filter.</tt><tt class="descname">block_icmp_port_unreachable</tt><big>(</big><big>)</big><a class="reference internal" href="../modules/pystack/kernel_filter.html#block_icmp_port_unreachable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.kernel_filter.block_icmp_port_unreachable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Blocks ICMP port unreachable packets sent by the kernel when a UDP port is hit without any service listening.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="pystack.kernel_filter.block_outgoing_packets">
-<tt class="descclassname">pystack.kernel_filter.</tt><tt class="descname">block_outgoing_packets</tt><big>(</big><em>proto</em>, <em>ipsrc=None</em>, <em>portsrc=None</em>, <em>ipdst=None</em>, <em>portdst=None</em><big>)</big><a class="reference internal" href="../_modules/pystack/kernel_filter.html#block_outgoing_packets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.kernel_filter.block_outgoing_packets" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pystack.kernel_filter.</tt><tt class="descname">block_outgoing_packets</tt><big>(</big><em>proto</em>, <em>ipsrc=None</em>, <em>portsrc=None</em>, <em>ipdst=None</em>, <em>portdst=None</em><big>)</big><a class="reference internal" href="../modules/pystack/kernel_filter.html#block_outgoing_packets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.kernel_filter.block_outgoing_packets" title="Permalink to this definition">¶</a></dt>
 <dd><p>Blocks outgoing packets coming from the kernel using iptables command.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="pystack.kernel_filter.unblock_icmp_port_unreachable">
-<tt class="descclassname">pystack.kernel_filter.</tt><tt class="descname">unblock_icmp_port_unreachable</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pystack/kernel_filter.html#unblock_icmp_port_unreachable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.kernel_filter.unblock_icmp_port_unreachable" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pystack.kernel_filter.</tt><tt class="descname">unblock_icmp_port_unreachable</tt><big>(</big><big>)</big><a class="reference internal" href="../modules/pystack/kernel_filter.html#unblock_icmp_port_unreachable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.kernel_filter.unblock_icmp_port_unreachable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove the rule that blocks ICMP port unreachable.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="pystack.kernel_filter.unblock_outgoing_packets">
-<tt class="descclassname">pystack.kernel_filter.</tt><tt class="descname">unblock_outgoing_packets</tt><big>(</big><em>proto</em>, <em>ipsrc=None</em>, <em>portsrc=None</em>, <em>ipdst=None</em>, <em>portdst=None</em><big>)</big><a class="reference internal" href="../_modules/pystack/kernel_filter.html#unblock_outgoing_packets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.kernel_filter.unblock_outgoing_packets" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pystack.kernel_filter.</tt><tt class="descname">unblock_outgoing_packets</tt><big>(</big><em>proto</em>, <em>ipsrc=None</em>, <em>portsrc=None</em>, <em>ipdst=None</em>, <em>portdst=None</em><big>)</big><a class="reference internal" href="../modules/pystack/kernel_filter.html#unblock_outgoing_packets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.kernel_filter.unblock_outgoing_packets" title="Permalink to this definition">¶</a></dt>
 <dd><p>Unblocks outgoing packets coming from the kernel using iptables command.</p>
 </dd></dl>
 
@@ -116,7 +116,7 @@ the Free Software Foundation, either version 3 of the License, or
 any later version <a class="reference external" href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p>
 <dl class="class">
 <dt id="pystack.pystack.PyStack">
-<em class="property">class </em><tt class="descclassname">pystack.pystack.</tt><tt class="descname">PyStack</tt><big>(</big><em>iface=None</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack.html#PyStack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack.PyStack" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pystack.pystack.</tt><tt class="descname">PyStack</tt><big>(</big><em>iface=None</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack.html#PyStack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack.PyStack" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
 <p>PyStack is the class that wrap all the layers together.
 It builds an entire stack linking all the layers. It implement
@@ -139,19 +139,19 @@ to stop listening packets.</p>
 
 <dl class="method">
 <dt id="pystack.pystack.PyStack.is_tcp_port_free">
-<tt class="descname">is_tcp_port_free</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack.html#PyStack.is_tcp_port_free"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack.PyStack.is_tcp_port_free" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">is_tcp_port_free</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack.html#PyStack.is_tcp_port_free"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack.PyStack.is_tcp_port_free" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return either or not the port sent in parameter is free</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack.PyStack.is_udp_port_free">
-<tt class="descname">is_udp_port_free</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack.html#PyStack.is_udp_port_free"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack.PyStack.is_udp_port_free" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">is_udp_port_free</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack.html#PyStack.is_udp_port_free"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack.PyStack.is_udp_port_free" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return either or not the port sent in parameter is free</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack.PyStack.register_tcp_application">
-<tt class="descname">register_tcp_application</tt><big>(</big><em>app</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack.html#PyStack.register_tcp_application"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack.PyStack.register_tcp_application" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">register_tcp_application</tt><big>(</big><em>app</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack.html#PyStack.register_tcp_application"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack.PyStack.register_tcp_application" title="Permalink to this definition">¶</a></dt>
 <dd><p>Register a TCP application on the stack. So
 basically create a tcp session for the app and attach
 the TCPSession to the TCP layer.</p>
@@ -159,13 +159,13 @@ the TCPSession to the TCP layer.</p>
 
 <dl class="method">
 <dt id="pystack.pystack.PyStack.register_udp_application">
-<tt class="descname">register_udp_application</tt><big>(</big><em>app</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack.html#PyStack.register_udp_application"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack.PyStack.register_udp_application" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">register_udp_application</tt><big>(</big><em>app</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack.html#PyStack.register_udp_application"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack.PyStack.register_udp_application" title="Permalink to this definition">¶</a></dt>
 <dd><p>Register the given app as an UDP application.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack.PyStack.run">
-<tt class="descname">run</tt><big>(</big><em>doreactor=True</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack.html#PyStack.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack.PyStack.run" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">run</tt><big>(</big><em>doreactor=True</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack.html#PyStack.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack.PyStack.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Just call the start_listening of the Ethernet layer (which
 hold the ScapyIO). Except for reactor which normally catch SIGINT to
 stop the reactor. Here we catch the SIGINT oursleves and stop the reactor
@@ -179,7 +179,7 @@ by changing a boolean (which is tested periodically)</p>
 
 <dl class="method">
 <dt id="pystack.pystack.PyStack.stop">
-<tt class="descname">stop</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pystack/pystack.html#PyStack.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack.PyStack.stop" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">stop</tt><big>(</big><big>)</big><a class="reference internal" href="../modules/pystack/pystack.html#PyStack.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack.PyStack.stop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Stop will stop the stack. But to make it &#8216;smartly&#8217; try for every
 connections of the tcp layer to call the close method if it exists.
 Then wait 5 seconds to be sure that all the connections have the time
@@ -201,168 +201,168 @@ the Free Software Foundation, either version 3 of the License, or
 any later version <a class="reference external" href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p>
 <dl class="function">
 <dt id="pystack.pystack_socket.create_connection">
-<tt class="descclassname">pystack.pystack_socket.</tt><tt class="descname">create_connection</tt><big>(</big><em>address</em>, <em>timeout=None</em>, <em>source_address=None</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#create_connection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.create_connection" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pystack.pystack_socket.</tt><tt class="descname">create_connection</tt><big>(</big><em>address</em>, <em>timeout=None</em>, <em>source_address=None</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#create_connection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.create_connection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a connection and return the socket connected</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="pystack.pystack_socket.gethostname">
-<tt class="descclassname">pystack.pystack_socket.</tt><tt class="descname">gethostname</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#gethostname"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.gethostname" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pystack.pystack_socket.</tt><tt class="descname">gethostname</tt><big>(</big><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#gethostname"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.gethostname" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the hostname</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="pystack.pystack_socket.socket">
-<em class="property">class </em><tt class="descclassname">pystack.pystack_socket.</tt><tt class="descname">socket</tt><big>(</big><em>family=2</em>, <em>type=1</em>, <em>proto=0</em>, <em>app=None</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pystack.pystack_socket.</tt><tt class="descname">socket</tt><big>(</big><em>family=2</em>, <em>type=1</em>, <em>proto=0</em>, <em>app=None</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket" title="Permalink to this definition">¶</a></dt>
 <dd><p>socket class that will replace the genuine one located in _socket</p>
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.accept">
-<tt class="descname">accept</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.accept"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.accept" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">accept</tt><big>(</big><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.accept"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.accept" title="Permalink to this definition">¶</a></dt>
 <dd><p>accept a connect in case of TCP Socket, raise an error for UDP</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.bind">
-<tt class="descname">bind</tt><big>(</big><em>(host</em>, <em>port)</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.bind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.bind" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">bind</tt><big>(</big><em>(host</em>, <em>port)</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.bind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.bind" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bind the application on the given port regardless of if this is an UDP or TCP socket</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.close">
-<tt class="descname">close</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.close" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">close</tt><big>(</big><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call the close function of the app</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.connect">
-<tt class="descname">connect</tt><big>(</big><em>(host</em>, <em>port)</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.connect" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">connect</tt><big>(</big><em>(host</em>, <em>port)</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.connect" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call connect of the app (also valid for UDP)</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.connect_ex">
-<tt class="descname">connect_ex</tt><big>(</big><em>(host</em>, <em>port)</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.connect_ex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.connect_ex" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">connect_ex</tt><big>(</big><em>(host</em>, <em>port)</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.connect_ex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.connect_ex" title="Permalink to this definition">¶</a></dt>
 <dd><p>See real socket module for info</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.fileno">
-<tt class="descname">fileno</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.fileno"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.fileno" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">fileno</tt><big>(</big><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.fileno"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.fileno" title="Permalink to this definition">¶</a></dt>
 <dd><p>Should be implemented in order to fake socket class. Does not do what expected may imply
 the app to crash if called.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.getpeername">
-<tt class="descname">getpeername</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.getpeername"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.getpeername" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getpeername</tt><big>(</big><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.getpeername"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.getpeername" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the remote IP, port of the peer</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.getsockname">
-<tt class="descname">getsockname</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.getsockname"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.getsockname" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getsockname</tt><big>(</big><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.getsockname"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.getsockname" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return local IP, port</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.getsockopt">
-<tt class="descname">getsockopt</tt><big>(</big><em>level</em>, <em>optname</em>, <em>bufflen=None</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.getsockopt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.getsockopt" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getsockopt</tt><big>(</big><em>level</em>, <em>optname</em>, <em>bufflen=None</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.getsockopt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.getsockopt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Not implemented but needed to fake socket class</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.gettimeout">
-<tt class="descname">gettimeout</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.gettimeout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.gettimeout" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">gettimeout</tt><big>(</big><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.gettimeout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.gettimeout" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the if blocking or not</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.ioctl">
-<tt class="descname">ioctl</tt><big>(</big><em>control</em>, <em>option</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.ioctl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.ioctl" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ioctl</tt><big>(</big><em>control</em>, <em>option</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.ioctl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.ioctl" title="Permalink to this definition">¶</a></dt>
 <dd><p>Not implemented</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.listen">
-<tt class="descname">listen</tt><big>(</big><em>backlog=0</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.listen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.listen" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">listen</tt><big>(</big><em>backlog=0</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.listen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.listen" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call app listen method of TCPApplication</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.makefile">
-<tt class="descname">makefile</tt><big>(</big><em>mode=None</em>, <em>bufsize=None</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.makefile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.makefile" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">makefile</tt><big>(</big><em>mode=None</em>, <em>bufsize=None</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.makefile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.makefile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Not implemented</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.recv">
-<tt class="descname">recv</tt><big>(</big><em>bufsize</em>, <em>flags=0</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.recv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.recv" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">recv</tt><big>(</big><em>bufsize</em>, <em>flags=0</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.recv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.recv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read informations received in the TCPApplication</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.recv_into">
-<tt class="descname">recv_into</tt><big>(</big><em>buffer</em>, <em>nbytes=None</em>, <em>flags=0</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.recv_into"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.recv_into" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">recv_into</tt><big>(</big><em>buffer</em>, <em>nbytes=None</em>, <em>flags=0</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.recv_into"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.recv_into" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write received bytes in the given buffer. (not tested)</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.recvfrom">
-<tt class="descname">recvfrom</tt><big>(</big><em>bufsize</em>, <em>flags=0</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.recvfrom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.recvfrom" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">recvfrom</tt><big>(</big><em>bufsize</em>, <em>flags=0</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.recvfrom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.recvfrom" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return information received in the socket, but also the originating peer</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.recvfrom_into">
-<tt class="descname">recvfrom_into</tt><big>(</big><em>buffer</em>, <em>nbytes=None</em>, <em>flags=0</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.recvfrom_into"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.recvfrom_into" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">recvfrom_into</tt><big>(</big><em>buffer</em>, <em>nbytes=None</em>, <em>flags=0</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.recvfrom_into"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.recvfrom_into" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write received bytes in the given buffer. (not tested)</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.send">
-<tt class="descname">send</tt><big>(</big><em>string</em>, <em>flags=0</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.send"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.send" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">send</tt><big>(</big><em>string</em>, <em>flags=0</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.send"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.send" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send the given data in the socket</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.sendall">
-<tt class="descname">sendall</tt><big>(</big><em>string</em>, <em>flags=0</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.sendall"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.sendall" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">sendall</tt><big>(</big><em>string</em>, <em>flags=0</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.sendall"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.sendall" title="Permalink to this definition">¶</a></dt>
 <dd><p>Also send the given data in the socket</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.sendto">
-<tt class="descname">sendto</tt><big>(</big><em>string</em>, <em>address</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.sendto"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.sendto" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">sendto</tt><big>(</big><em>string</em>, <em>address</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.sendto"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.sendto" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send data to the given host. TCP ignore address. UDP send to the right hosts</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.setblocking">
-<tt class="descname">setblocking</tt><big>(</big><em>flag</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.setblocking"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.setblocking" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">setblocking</tt><big>(</big><em>flag</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.setblocking"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.setblocking" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set a boolean to make read write blocking or not</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.setsockopt">
-<tt class="descname">setsockopt</tt><big>(</big><em>level</em>, <em>optname</em>, <em>value</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.setsockopt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.setsockopt" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">setsockopt</tt><big>(</big><em>level</em>, <em>optname</em>, <em>value</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.setsockopt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.setsockopt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Not implemented</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.settimeout">
-<tt class="descname">settimeout</tt><big>(</big><em>flag=None</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.settimeout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.settimeout" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">settimeout</tt><big>(</big><em>flag=None</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.settimeout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.settimeout" title="Permalink to this definition">¶</a></dt>
 <dd><p>Not implemented. Define binary a timeout for blocking read/write</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.shutdown">
-<tt class="descname">shutdown</tt><big>(</big><em>how</em><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.shutdown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.shutdown" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">shutdown</tt><big>(</big><em>how</em><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.shutdown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.shutdown" title="Permalink to this definition">¶</a></dt>
 <dd><p>Not implemented</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pystack.pystack_socket.socket.stop">
-<tt class="descname">stop</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pystack/pystack_socket.html#socket.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.stop" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">stop</tt><big>(</big><big>)</big><a class="reference internal" href="../modules/pystack/pystack_socket.html#socket.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pystack.pystack_socket.socket.stop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Stop the associated application</p>
 </dd></dl>
 
