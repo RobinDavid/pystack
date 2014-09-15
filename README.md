@@ -7,10 +7,10 @@ The applications are multiples and there is currently no any module that provide
 It is developped above the Scapy framework to bring some network stateful functionalities adding to it multiple protocols implementations themselves architectured into a stack which allow the different layers to
 communicate. All this **brings the IP stack in userland** and then allow to do anything on network packets like modifying the network stack behavior without patching the Linux kernel.
 
-<!--Full Documentation
+Full Documentation
 ==================
 
-The full documentation with examples and explanation is available here: http://www.robindavid.comli.com/pystack-->
+The full documentation with examples and explanation is available here: [robindavid.github.io/pystack](http://robindavid.github.io/pystack)
 
 Package
 =======
