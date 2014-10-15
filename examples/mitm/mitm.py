@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 '''
 Author: Robin David
 License: GNU GPLv3
@@ -33,14 +35,14 @@ from pystack.nfqueue_utils import NFQueueManager
 
 
 class MyWindowMITM(QDialog, window.Ui_Dialog):
-    def __init__(self, parent=None):
+    def __init__(self, iface=None, parent=None):
         super(QDialog, self).__init__(parent)
         self.setupUi(self)
         
         self.hooked = False
         
         #-- Network info
-        self.interface = "eth0"
+        self.interface = iface
         self.ip = QtNetwork.QNetworkInterface.interfaceFromName(self.interface).addressEntries()[0].ip().toString() #A way like another to get local IP
         
         #-- Nfqueue stuff
@@ -187,7 +189,8 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv) #Create the Qt Application
     app.setApplicationName("MITM")
-    win = MyWindowMITM() #Instanciate the window
+    iff=sys.argv[1] if len(sys.argv)>1 else None
+    win = MyWindowMITM(iface=iff) #Instanciate the window
 
     win.show()
     app.exec_() #Start the app

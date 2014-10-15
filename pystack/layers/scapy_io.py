@@ -94,7 +94,7 @@ class ScapyIO(base.BasePort):
 
     def send(self, packet):
         """Send the given packet without any kind of test"""
-        sendp(packet, verbose=False)
+        sendp(packet, iface=self.interface, verbose=False)
     
     def stop_listening(self):
         """

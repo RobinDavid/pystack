@@ -298,7 +298,8 @@ if __name__ == "__main__":
 
     app2 = QApplication.instance()
 
-    stack = PyStack()
+    iff = sys.argv[1] if len(sys.argv)>1 else None
+    stack = PyStack(iface=iff)
     stack.run(doreactor=False)
 
     steganoapp = SteganoApplication(win)
@@ -308,10 +309,11 @@ if __name__ == "__main__":
     
     steganoapp.run()
     
-    steganoapp.connect("192.168.0.13", 80)
+    ip=sys.argv[2] if len(sys.argv) > 2 else "192.168.0.13"
+    steganoapp.connect(ip, 80)
     
-    win.textedit_regular.setPlainText("GET / HTTP/1.1\nHost: 192.168.0.13\nUser-Agent: Mozilla/5.0\nKeep-Alive: 300\nConnection: keep-alive\n\n")
-    win.textedit_hidden.setPlainText("GET / HTTP/1.1\nHost: 192.168.0.13\nUser-Agent: Mozilla/5.0\nKeep-Alive: 300\nConnection: keep-alive\n\n")
+    win.textedit_regular.setPlainText("GET / HTTP/1.1\nHost: "+ip+"\nUser-Agent: Mozilla/5.0\nKeep-Alive: 300\nConnection: keep-alive\n\n")
+    win.textedit_hidden.setPlainText("GET / HTTP/1.1\nHost: "+ip+"\nUser-Agent: Mozilla/5.0\nKeep-Alive: 300\nConnection: keep-alive\n\n")
 
     app.exec_()
     

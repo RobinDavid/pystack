@@ -99,7 +99,7 @@ class EthernetProtocol(Layer):
             else:
                 ipaddr = dstIP  #Otherwise use directly the IP of dest
             
-            #self.packet_pool.append(packet)
+            #TODO: Deal better with interface and why not sending trame on this interface instead of always the same one ?
             if iff == "lo":
                 mac = "ff:ff:ff:ff:ff:ff"
             else:

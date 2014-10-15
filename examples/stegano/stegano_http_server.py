@@ -15,6 +15,8 @@ any later version http://www.gnu.org/licenses/.
 '''
 import random
 import re
+import os
+import sys
 
 from pystack.layers.tcp_session import TCPSession
 from pystack.layers.tcp_application import TCPApplication
@@ -25,7 +27,6 @@ from twisted.web.server import Site
 from twisted.web import static
 from twisted.internet.abstract import FileDescriptor
 from twisted.internet.abstract import _ConsumerMixin
-import os
 
 
 def binvalue(val, bitsize): #Return the binary value as a string of the given size 
@@ -250,7 +251,8 @@ class SteganoWebServer(TCPApplication):
 
 if __name__ == "__main__":
 
-    stack = PyStack()
+    iff = sys.argv[1] if len(sys.argv)>1 else None
+    stack = PyStack(iface=iff)
 
     steganoapp = SteganoWebServer()
     server = TCPApplication()

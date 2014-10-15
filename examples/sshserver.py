@@ -83,7 +83,6 @@ class SSHServer(TCPApplication, _ConsumerMixin):
         
     def packet_received(self, packet, **kwargs): #Override TCPApplication packet_received to call the dataReceived of twisted
         try:
-            print("Request received:"+packet+"\n----------")
             self.app.dataReceived(packet)
         except Exception, e:
             print("Something is wrong in the request:"+ str(e))
@@ -96,7 +95,6 @@ class SSHServer(TCPApplication, _ConsumerMixin):
         elif self.buff != "":
             data = self.buff+data
             self.buff = ""
-        print("Write data:"+data+"\n-------------")
             
         while len(data) > 0:
             x = data[0:1000]
@@ -127,19 +125,12 @@ class SSHServer(TCPApplication, _ConsumerMixin):
         
     def getvalue(self):
         pass
-    
-    def hook_incoming(self, packet, **kwargs):
-        """Method called by tcpsession when a packet is received. Can be overriden to apply operation on incoming packets"""
-        print str(packet)
-    
-    def hook_outgoing(self, packet, **kwargs):
-        """Method called by tcpsession just before a tcp packet is crafted and sent"""
-        print str(packet)
-        return packet, kwargs
 
 if __name__ =="__main__":
     from pystack.pystack import PyStack
-    stack = PyStack()
+    import sys
+    iface = sys.argv[1] if len(sys.argv) > 1 else None
+    stack = PyStack(iface=iface)
     
     sshserver = SSHServer()
     

@@ -13,6 +13,8 @@ it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or 
 any later version http://www.gnu.org/licenses/. 
 '''
+import sys
+
 from pystack.layers.tcp_application import TCPApplication
 from pystack.pystack import PyStack
 
@@ -21,7 +23,7 @@ class EchoServer(TCPApplication):
         self.send_packet(packet, **kwargs) #Just call reply the same data received by calling send_packet
         
 if __name__ =="__main__":
-    stack = PyStack() #Create the stack
+    stack = PyStack(iface=sys.argv[1] if len(sys.argv) > 1 else None) #Create the stack
     
     echoserver = EchoServer() #Instanciate the TCPApplication
     
