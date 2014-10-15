@@ -20,7 +20,7 @@ class Client():
         
     def run(self):
         
-        HOST = '192.168.1.37'    # The remote host
+        HOST = '192.168.56.101'    # The remote host
         PORT = 7777              # The same port as used by the server
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((HOST, PORT))
