@@ -68,7 +68,9 @@ class WebServer(TCPApplication, _ConsumerMixin):
 
 if __name__ =="__main__":
     from pystack.pystack import PyStack
-    stack = PyStack("eth0") #Create a stack
+    import sys
+    iface= sys.argv[1] if len(sys.argv) > 1 else None
+    stack = PyStack(iface=iface) #Create a stack
     
     webserver = WebServer() #Create an instance of the TCPApplication
     stack.register_tcp_application(webserver)
